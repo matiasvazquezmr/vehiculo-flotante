@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Estudio de Vehículo Flotante</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #2ecc71;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --info: #3498db;
+            --bg-light: #f8f9fa;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-light);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Sistema de Pantallas (SPA) */
+        .pantalla {
+            display: none;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+        }
+        .pantalla.activa {
+            display: flex;
+        }
+
+        /* PANTALLA 1: CONFIGURACIÓN */
+        #pantalla-config {
+            padding: 25px;
+            justify-content: center;
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            overflow-y: auto;
+        }
+        .header-config {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header-config h1 { margin: 0; font-size: 1.8em; color: var(--accent); }
+        .header-config p { margin: 5px 0 0 0; opacity: 0.8; font-size: 0.9em; }
+        .form-group {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group label {
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        .form-group input {
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .form-group input:focus {
+            outline: 2px solid var(--accent);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* PANTALLA 2: APLICACIÓN / CAPTURA */
+        #map {
+            flex-grow: 1;
+            width: 100%;
+            z-index: 1;
+        }
+        #panel-metricas {
+            background: var(--primary);
+            color: white;
+            padding: 12px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            z-index: 1000;
+        }
+        .metrica {
+            background: rgba(255,255,255,0.1);
+            padding: 10px 5px;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 0.8em;
+        }
+        .metrica span {
+            display: block;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: var(--accent);
+            margin-top: 4px;
+        }
+        .metrica.destacada span { color: #f1c40f; }
+
+        /* PANTALLA 3: RESUMEN / EXPORTACIÓN */
+        #pantalla-resumen {
+            padding: 15px;
+            overflow-y: auto;
+            background: #f4f6f7;
+        }
+        .card-reporte {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-bottom: 15px;
+        }
+        .card-reporte h2 { margin-top: 0; color: var(--primary); border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        
+        /* Tablas Estilizadas */
+        .tabla-resumen {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 0.9em;
+        }
+        .tabla-resumen th, .tabla-resumen td {
+            padding: 12px 10px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .tabla-resumen th { background-color: #f8f9fa; color: var(--primary); font-weight: bold; }
+
+        /* Botoneras y Modales */
+        .botonera-fija {
+            display: flex;
+            padding: 12px;
+            background: white;
+            gap: 10px;
+            z-index: 1000;
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
+        }
+        .grid-botones-export {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        button {
+            padding: 16px;
+            font-size: 1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: background 0.2s;
+        }
+        .btn-accion { background: var(--accent); color: white; width: 100%; }
+        .btn-alerta { background: var(--danger); color: white; }
+        .btn-warning { background: var(--warning); color: white; }
+        .btn-info { background: var(--info); color: white; }
+        .btn-outline { background: #7f8c8d; color: white; }
+
+        /* Modal de Observaciones Rápidas */
+        #modal-obs {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 2000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+        }
+        .grid-obs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .btn-obs-opcion { background: #ecf0f1; color: var(--primary); font-size: 0.85em; text-transform: none; padding: 12px 5px; }
+    </style>
+</head>
+<body>
+
+    <div id="pantalla-config" class="pantalla activa">
+        <div class="header-config">
+            <h1>Vehículo Flotante</h1>
+            <p>Ingeniería de Tránsito & Movilidad Urbana</p>
+        </div>
+        <div class="form-group">
+            <label>Corredor / Vialidad:</label>
+            <input type="text" id="in-lugar" placeholder="Ej: Av. Pellegrini">
+        </div>
+        <div class="form-group">
+            <label>Intersección Origen (Desde):</label>
+            <input type="text" id="in-desde" placeholder="Ej: Bv. Oroño">
+        </div>
+        <div class="form-group">
+            <label>Intersección Destino (Hasta):</label>
+            <input type="text" id="in-hasta" placeholder="Ej: Av. Belgrano">
+        </div>
+        <button class="btn-accion" style="margin-top: 20px;" onclick="irAPantallaApp()">Comenzar Recorrido</button>
+    </div>
+
+    <div id="pantalla-app" class="pantalla">
+        <div id="panel-metricas">
+            <div class="metrica">T. Total<span id="txt-t-total">00:00</span></div>
+            <div class="metrica">T. Marcha<span id="txt-t-mov">00:00</span></div>
+            <div class="metrica">T. Detenido<span id="txt-t-frenado">00:00</span></div>
+            <div class="metrica destacada">Distancia<span id="txt-distancia">0 m</span></div>
+            <div class="metrica destacada">Velocidad<span id="txt-velocidad">0 km/h</span></div>
+            <div class="metrica">Tramo Activo<span id="txt-t-entre-paradas">0s</span></div>
+        </div>
+
+        <div id="map"></div>
+
+        <div class="botonera-fija">
+            <button class="btn-warning" style="flex: 2;" onclick="abrirModalObs()">Observación</button>
+            <button class="btn-alerta" style="flex: 1;" onclick="finalizarRecorrido()">Fin</button>
+        </div>
+    </div>
+
+    <div id="pantalla-resumen" class="pantalla">
+        
+        <div id="bloque-reporte-pdf" class="card-reporte">
+            <h2>Resumen Ejecutivo de Auditoría</h2>
+            <table class="tabla-resumen">
+                <tr><th>Parámetro Vial</th><th>Valor Registrado</th></tr>
+                <tr><td>Corredor Analizado</td><td id="rep-corredor" style="font-weight: bold;">-</td></tr>
+                <tr><td>Tramo Operativo</td><td><span id="rep-desde">-</span> hasta <span id="rep-hasta">-</span></td></tr>
+                <tr><td>Fecha del Estudio</td><td id="rep-fecha">-</td></tr>
+                <tr style="border-top: 2px solid var(--primary);"><td>Distancia Total Recorrida</td><td id="rep-distancia" style="font-weight:bold; color:var(--info);">-</td></tr>
+                <tr><td>Tiempo Total de Viaje</td><td id="rep-t-total">-</td></tr>
+                <tr><td>Tiempo Neto en Marcha</td><td id="rep-t-mov" style="color:var(--accent);">-</td></tr>
+                <tr><td>Tiempo de Demora (Frenado)</td><td id="rep-t-frenado" style="color:var(--danger);">-</td></tr>
+                <tr><td>Eficiencia de Marcha</td><td id="rep-eficiencia" style="font-weight: bold;">-</td></tr>
+            </table>
+
+            <h3 style="margin-top:20px; color: var(--primary);">Historial de Eventos y Observaciones</h3>
+            <table class="tabla-resumen" id="tabla-eventos-detalle">
+                <thead>
+                    <tr><th>Hora</th><th>Evento</th><th>Métrica / Detalle</th></tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </div>
+
+        <div class="grid-botones-export">
+            <button class="btn-warning" onclick="exportarExcel()">Exportar a MS Excel (.xlsx)</button>
+            <button class="btn-info" onclick="exportarPDF()">Exportar Reporte PDF (.pdf)</button>
+            <button class="btn-accion" onclick="exportarCSV()">Descargar Datos Crudos (.csv)</button>
+            <button class="btn-outline" style="margin-top:15px;" onclick="reiniciarApp()">Iniciar Nuevo Recorrido</button>
+        </div>
+    </div>
+
+    <div id="modal-obs">
+        <div class="modal-content">
+            <h3 style="margin-top:0; text-align:center; color: var(--primary);">Registrar Evento Vial</h3>
+            <div class="grid-obs">
+                <button class="btn-obs-opcion" onclick="inyectarObservacion('Vehículo en Doble Fila')">🚗 Doble Fila</button>
+                <button class="btn-obs-opcion" onclick="inyectarObservacion('Flujo de Camiones')">🚛 Camiones</button>
+                <button class="btn-obs-opcion" onclick="inyectarObservacion('Bloqueo Colectivo')">🚌 Parada Bus</button>
+                <button class="btn-obs-opcion" onclick="inyectarObservacion('Obras en Calzada')">🚧 Obras</button>
+                <button class="btn-obs-opcion" onclick="inyectarObservacion('Zona Industrial')">🏭 Zona Ind.</button>
+                <button class="btn-obs-opcion" onclick="inyectarObservacion('Congestión Severa')">🛑 Tapón Vial</button>
+            </div>
+            <button class="btn-outline" style="width:100%; padding:10px;" onclick="cerrarModalObs()">Cancelar</button>
+        </div>
+    </div>
+
+    <script>
+        // Control de navegación de pantallas
+        function cambiarPantalla(idPantalla) {
+            document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('activa'));
+            document.getElementById(idPantalla).classList.add('activa');
+            if(idPantalla === 'pantalla-app') {
+                setTimeout(() => map.invalidateSize(), 200); // Forzar refresco geométrico de Leaflet
+            }
+        }
+
+        // Variables de Control de Estado Técnico
+        let map, rutaInstancia, watchId = null, cronometroId = null;
+        let historialDatos = []; 
+        let registroEventosEspeciales = []; // Guarda solo paradas fijas y observaciones para la tabla resumen
+
+        // Métricas de Ingeniería de Tránsito
+        let segTotales = 0, segMovimiento = 0, segFrenadoTotal = 0, segDesdeUltimaParada = 0, distanciaTotalMetros = 0;
+        let ultimoPunto = null, estaDetenido = false, inicioParadaTime = null, marcadorParadaActual = null;
+
+        const UMBRAL_VELOCIDAD_PARADA = 4.0; // Velocidad límite en km/h
+
+        // Inicializar entorno cartográfico base
+        window.onload = () => {
+            map = L.map('map').setView([-32.95, -60.66], 14);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OSM' }).addTo(map);
+            rutaInstancia = L.polyline([], {color: '#3498db', weight: 6}).addTo(map);
+        };
+
+        function irAPantallaApp() {
+            if(!document.getElementById('in-lugar').value.trim()) {
+                alert("Debe especificar la vialidad o corredor bajo estudio."); return;
+            }
+            
+            // Inicializar contadores y vaciar arreglos
+            historialDatos = []; registroEventosEspeciales = [];
+            segTotales = segMovimiento = segFrenadoTotal = segDesdeUltimaParada = distanciaTotalMetros = 0;
+            ultimoPunto = null; estaDetenido = false;
+
+            cambiarPantalla('pantalla-app');
+
+            // Habilitar motor de reloj viales
+            cronometroId = setInterval(() => {
+                segTotales++;
+                if (estaDetenido) { segFrenadoTotal++; } 
+                else { segMovimiento++; segDesdeUltimaParada++; }
+                actualizarPanelMetricasUI();
+            }, 1000);
+
+            // Encender rastreador de hardware GPS
+            if ("geolocation" in navigator) {
+                watchId = navigator.geolocation.watchPosition(procesarTelemetriaGPS, err => console.warn(err), {
+                    enableHighAccuracy: true, maximumAge: 0, timeout: 6000
+                });
+            }
+        }
+
+        function procesarTelemetriaGPS(position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            const timestamp = position.timestamp;
+            let velocidadKmh = 0;
+            
+            if (ultimoPunto) {
+                const distM = calcularDistanciaHaversine(ultimoPunto.lat, ultimoPunto.lng, lat, lng);
+                const deltaTiempoSeg = (timestamp - ultimoPunto.timestamp) / 1000;
+                
+                if (deltaTiempoSeg > 0) {
+                    velocidadKmh = (distM / deltaTiempoSeg) * 3.6;
+                    if (velocidadKmh < 140) { distanciaTotalMetros += distM; } // Filtrar rebotes de señal
+                }
+            }
+
+            document.getElementById('txt-velocidad').innerText = velocidadKmh.toFixed(1) + " km/h";
+
+            // Lógica Automática de Paradas/Demoras
+            if (velocidadKmh < UMBRAL_VELOCIDAD_PARADA) {
+                if (!estaDetenido) {
+                    estaDetenido = true;
+                    inicioParadaTime = Date.now();
+                    registrarLogGeneral(lat, lng, velocidadKmh, "INICIO_PARADA", `Previo en marcha: ${segDesdeUltimaParada}s`);
+                    marcadorParadaActual = L.circleMarker([lat, lng], { radius: 9, color: '#e74c3c', fillColor: '#e74c3c', fillOpacity: 0.8 }).addTo(map);
+                }
+            } else {
+                if (estaDetenido) {
+                    estaDetenido = false;
+                    const duracionParadaSeg = Math.floor((Date.now() - inicioParadaTime) / 1000);
+                    
+                    registrarLogGeneral(lat, lng, velocidadKmh, "FIN_PARADA", `Frenado: ${duracionParadaSeg}s`);
+                    
+                    if (duracionParadaSeg > 1) {
+                        registroEventosEspeciales.push({
+                            hora: new Date().toLocaleTimeString(),
+                            evento: "🛑 Parada / Demora",
+                            detalle: `Vehículo detenido durante ${duracionParadaSeg} segundos.`
+                        });
+                        if (marcadorParadaActual) marcadorParadaActual.bindPopup(`Demora: ${duracionParadaSeg}s`).openPopup();
+                    } else {
+                        if (marcadorParadaActual) map.removeLayer(marcadorParadaActual);
+                    }
+                    segDesdeUltimaParada = 0;
+                    marcadorParadaActual = null;
+                }
+            }
+
+            registrarLogGeneral(lat, lng, velocidadKmh, estaDetenido ? "FRENADO" : "MARCHA", "");
+            
+            // Actualizar traza en mapa y mover cámara
+            const coord = [lat, lng];
+            rutaInstancia.addLatLng(coord);
+            map.setView(coord, 17);
+
+            ultimoPunto = { lat, lng, timestamp };
+        }
+
+        function registrarLogGeneral(lat, lng, vel, evento, det) {
+            historialDatos.push({
+                Hora: new Date().toISOString(), Latitud: lat.toFixed(6), Longitud: lng.toFixed(6),
+                Velocidad_Kmh: vel.toFixed(2), Dist_Acum_M: distanciaTotalMetros.toFixed(1),
+                Estado: evento, Detalle: det
+            });
+        }
+
+        function finalizarRecorrido() {
+            if (watchId) navigator.geolocation.clearWatch(watchId);
+            if (cronometroId) clearInterval(cronometroId);
+            
+            // Cargar datos en la Pantalla 3 de Reporte
+            document.getElementById('rep-corredor').innerText = document.getElementById('in-lugar').value;
+            document.getElementById('rep-desde').innerText = document.getElementById('in-desde').value || 'Punto Inicial';
+            document.getElementById('rep-hasta').innerText = document.getElementById('in-hasta').value || 'Punto Final';
+            document.getElementById('rep-fecha').innerText = new Date().toLocaleDateString();
+            
+            const distFinalText = distanciaTotalMetros > 1000 ? (distanciaTotalMetros/1000).toFixed(2) + " km" : Math.floor(distanciaTotalMetros) + " m";
+            document.getElementById('rep-distancia').innerText = distFinalText;
+            document.getElementById('rep-t-total').innerText = formatearMinutosSegundos(segTotales);
+            document.getElementById('rep-t-mov').innerText = formatearMinutosSegundos(segMovimiento);
+            document.getElementById('rep-t-frenado').innerText = formatearMinutosSegundos(segFrenadoTotal);
+            
+            const eficiencia = segTotales > 0 ? ((segMovimiento / segTotales) * 100).toFixed(1) + "% tiempo en marcha" : "0%";
+            document.getElementById('rep-eficiencia').innerText = eficiencia;
+
+            // Llenar tabla del reporte de eventos
+            const tbody = document.querySelector('#tabla-eventos-detalle tbody');
+            tbody.innerHTML = "";
+            if(registroEventosEspeciales.length === 0) {
+                tbody.innerHTML = "<tr><td colspan='3' style='text-align:center; color:#95a5a6;'>No se registraron demoras ni observaciones en este viaje.</td></tr>";
+            } else {
+                registroEventosEspeciales.forEach(ev => {
+                    tbody.innerHTML += `<tr><td>${ev.hora}</td><td>${ev.evento}</td><td>${ev.detalle}</td></tr>`;
+                });
+            }
+
+            cambiarPantalla('pantalla-resumen');
+        }
+
+        // --- SISTEMA DE OBSERVACIONES MÓVILES ---
+        function abrirModalObs() { document.getElementById('modal-obs').style.display = 'flex'; }
+        function cerrarModalObs() { document.getElementById('modal-obs').style.display = 'none'; }
+        
+        function inyectarObservacion(tipoObs) {
+            const lat = ultimoPunto ? ultimoPunto.lat : 0;
+            const lng = ultimoPunto ? ultimoPunto.lng : 0;
+            
+            registrarLogGeneral(lat, lng, 0, "OBSERVACION", tipoObs);
+            
+            registroEventosEspeciales.push({
+                hora: new Date().toLocaleTimeString(),
+                evento: "⚠️ Observación",
+                detalle: tipoObs
+            });
+
+            if(ultimoPunto) {
+                L.marker([lat, lng]).addTo(map).bindPopup(`<b>Observado:</b> ${tipoObs}`).openPopup();
+            }
+            cerrarModalObs();
+        }
+
+        // ================= MOTORES DE EXPORTACIÓN =================
+
+        // 1. MOTOR EXCEL (Genera un libro con dos hojas organizadas)
+        function exportarExcel() {
+            const wb = XLSX.utils.book_new();
+            
+            // Hoja 1: KPI Resumen General
+            const resumenAOA = [
+                ["INDICADOR DE TRÁNSITO", "VALOR REGISTRADO"],
+                ["Corredor", document.getElementById('in-lugar').value],
+                ["Desde", document.getElementById('in-desde').value],
+                ["Hasta", document.getElementById('in-hasta').value],
+                ["Distancia Total", document.getElementById('rep-distancia').innerText],
+                ["Tiempo Total Viaje", formatearMinutosSegundos(segTotales)],
+                ["Tiempo en Movimiento", formatearMinutosSegundos(segMovimiento)],
+                ["Tiempo Frenado (Demora)", formatearMinutosSegundos(segFrenadoTotal)],
+                ["Eficiencia Operativa", document.getElementById('rep-eficiencia').innerText]
+            ];
+            const wsResumen = XLSX.utils.aoa_to_sheet(resumenAOA);
+            XLSX.utils.book_append_sheet(wb, wsResumen, "Resumen General");
+
+            // Hoja 2: Traza Geoespacial Completa para QGIS / Modelado
+            const wsDetalle = XLSX.utils.json_to_sheet(historialDatos);
+            XLSX.utils.book_append_sheet(wb, wsDetalle, "Traza Completa GPS");
+
+            XLSX.writeFile(wb, `Estudio_Flotante_${document.getElementById('in-lugar').value.replace(/\s+/g, '_')}.xlsx`);
+        }
+
+        // 2. MOTOR PDF (Genera reporte visual maquetado para impresión directa)
+        function exportarPDF() {
+            const elementoReporte = document.getElementById('bloque-reporte-pdf');
+            const opciones = {
+                margin:       [12, 12],
+                filename:     `Reporte_Flotante_${document.getElementById('in-lugar').value.replace(/\s+/g, '_')}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opciones).from(elementoReporte).save();
+        }
+
+        // 3. MOTOR CSV (Descarga directa estándar)
+        function exportarCSV() {
+            if(historialDatos.length === 0) return;
+            const headers = Object.keys(historialDatos[0]).join(",") + "\n";
+            const lineas = historialDatos.map(row => Object.values(row).map(val => `"${val}"`).join(",")).join("\n");
+            
+            const blob = new Blob([headers + lineas], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.setAttribute("download", `Datos_Crudos_${document.getElementById('in-lugar').value.replace(/\s+/g, '_')}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Auxiliares del Sistema
+        function actualizarPanelMetricasUI() {
+            document.getElementById('txt-t-total').innerText = formatearMinutosSegundos(segTotales);
+            document.getElementById('txt-t-mov').innerText = formatearMinutosSegundos(segMovimiento);
+            document.getElementById('txt-t-frenado').innerText = formatearMinutosSegundos(segFrenadoTotal);
+            document.getElementById('txt-t-entre-paradas').innerText = segDesdeUltimaParada + "s";
+            document.getElementById('txt-distancia').innerText = distanciaTotalMetros > 1000 ? (distanciaTotalMetros/1000).toFixed(2) + " km" : Math.floor(distanciaTotalMetros) + " m";
+        }
+
+        function calcularDistanciaHaversine(lat1, lon1, lat2, lon2) {
+            const R = 6371e3; // Radio terrestre en metros
+            const p1 = lat1 * Math.PI/180, p2 = lat2 * Math.PI/180;
+            const dPhi = (lat2-lat1) * Math.PI/180, dLambda = (lon2-lon1) * Math.PI/180;
+            const a = Math.sin(dPhi/2)**2 + Math.cos(p1)*Math.cos(p2)*Math.sin(dLambda/2)**2;
+            return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+        }
+
+        function formatearMinutosSegundos(segs) {
+            const m = String(Math.floor(segs / 60)).padStart(2, '0');
+            const s = String(segs % 60).padStart(2, '0');
+            return `${m}:${s}`;
+        }
+
+        function reiniciarApp() {
+            // Limpiar campos y trazas
+            document.getElementById('in-lugar').value = "";
+            document.getElementById('in-desde').value = "";
+            document.getElementById('in-hasta').value = "";
+            if(rutaInstancia) rutaInstancia.setLatLngs([]);
+            cambiarPantalla('pantalla-config');
+        }
+    </script>
+</body>
+</html>
