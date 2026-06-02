@@ -30,7 +30,7 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
             background-color: var(--bg-light);
             height: 100vh;
-            height: 100dvh; /* Solución crucial: Adapta el alto real dinámico en celulares */
+            height: 100dvh; /* Adapta el alto real dinámico en celulares */
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -115,10 +115,17 @@
         }
         .metrica.destacada span { color: #f1c40f; }
 
-        #map {
+        #map-wrapper {
             flex-grow: 1;
             width: 100%;
-            min-height: 0; /* Solución crucial: Permite al mapa encogerse sin desbordar el flexbox */
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
             z-index: 1;
         }
 
@@ -149,6 +156,17 @@
             border-bottom: 1px solid #e0e0e0;
         }
         .tabla-resumen th { background-color: #f8f9fa; color: var(--primary); font-weight: bold; }
+
+        /* Contenedor del Mapa dentro del Reporte Impreso */
+        #mapa-reporte-contenedor {
+            height: 350px;
+            width: 100%;
+            margin-top: 15px;
+            border-radius: 10px;
+            border: 1px solid #bdc3c7;
+            overflow: hidden;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+        }
 
         /* Botoneras y Modales */
         .botonera-fija {
@@ -183,7 +201,7 @@
         .btn-info { background: var(--info); color: white; }
         .btn-outline { background: #7f8c8d; color: white; }
 
-        /* Modal de Observaciones Rápidas */
+        /* Modal de Observaciones */
         #modal-obs {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -199,14 +217,50 @@
             border-radius: 12px;
             width: 90%;
             max-width: 400px;
+            box-sizing: border-box;
         }
         .grid-obs {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 10px;
-            margin: 15px 0;
+            margin: 15px 0 5px 0;
         }
         .btn-obs-opcion { background: #ecf0f1; color: var(--primary); font-size: 0.85em; text-transform: none; padding: 12px 5px; }
+
+        /* Contenedor Campo de Observación Libre */
+        .seccion-obs-libre {
+            border-top: 1px solid #e0e0e0;
+            margin-top: 15px;
+            padding-top: 12px;
+        }
+        .seccion-obs-libre label {
+            font-size: 0.85em;
+            font-weight: bold;
+            color: var(--primary);
+            display: block;
+            margin-bottom: 6px;
+        }
+        .wrapper-input-libre {
+            display: flex;
+            gap: 6px;
+        }
+        .wrapper-input-libre input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 0.9em;
+        }
+        .wrapper-input-libre input:focus {
+            outline: 2px solid var(--warning);
+        }
+        .btn-guardar-libre {
+            background: var(--warning);
+            color: white;
+            padding: 10px 14px;
+            font-size: 0.85em;
+            text-transform: uppercase;
+        }
     </style>
 </head>
 <body>
@@ -241,7 +295,9 @@
             <div class="metrica">Tramo Activo<span id="txt-t-entre-paradas">0s</span></div>
         </div>
 
-        <div id="map"></div>
+        <div id="map-wrapper">
+            <div id="map"></div>
+        </div>
 
         <div class="botonera-fija">
             <button class="btn-warning" style="flex: 2;" onclick="abrirModalObs()">Observación</button>
@@ -265,7 +321,10 @@
                 <tr><td>Eficiencia de Marcha</td><td id="rep-eficiencia" style="font-weight: bold;">-</td></tr>
             </table>
 
-            <h3 style="margin-top:20px; color: var(--primary);">Historial de Eventos y Observaciones</h3>
+            <h3 style="margin-top:25px; margin-bottom:5px; color: var(--primary);">Croquis Espacial y Puntos de Interés</h3>
+            <div id="mapa-reporte-contenedor"></div>
+
+            <h3 style="margin-top:25px; color: var(--primary);">Historial de Eventos y Observaciones</h3>
             <table class="tabla-resumen" id="tabla-eventos-detalle">
                 <thead>
                     <tr><th>Hora</th><th>Evento</th><th>Métrica / Detalle</th></tr>
@@ -294,7 +353,16 @@
                 <button class="btn-obs-opcion" onclick="inyectarObservacion('Zona Industrial')">🏭 Zona Ind.</button>
                 <button class="btn-obs-opcion" onclick="inyectarObservacion('Congestión Severa')">🛑 Tapón Vial</button>
             </div>
-            <button class="btn-outline" style="width:100%; padding:10px;" onclick="cerrarModalObs()">Cancelar</button>
+            
+            <div class="seccion-obs-libre">
+                <label>✏️ Otro Evento (Descripción Libre):</label>
+                <div class="wrapper-input-libre">
+                    <input type="text" id="in-obs-manual" placeholder="Ej: Bache profundo, Semáforo roto...">
+                    <button class="btn-guardar-libre" onclick="procesarObservacionManual()">Guardar</button>
+                </div>
+            </div>
+
+            <button class="btn-outline" style="width:100%; padding:10px; margin-top: 15px;" onclick="cerrarModalObs()">Cancelar</button>
         </div>
     </div>
 
@@ -302,9 +370,6 @@
         function cambiarPantalla(idPantalla) {
             document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('activa'));
             document.getElementById(idPantalla).classList.add('activa');
-            if(idPantalla === 'pantalla-app') {
-                setTimeout(() => map.invalidateSize(), 200);
-            }
         }
 
         let map, rutaInstancia, watchId = null, cronometroId = null;
@@ -317,8 +382,14 @@
         const UMBRAL_VELOCIDAD_PARADA = 4.0;
 
         window.onload = () => {
-            map = L.map('map').setView([-32.95, -60.66], 14);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OSM' }).addTo(map);
+            // Inicialización con preferCanvas para optimizar la exportación geométrica en html2canvas
+            map = L.map('map', { preferCanvas: true }).setView([-32.95, -60.66], 14);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { 
+                attribution: '© OSM',
+                crossOrigin: true // Requerido para evitar que html2canvas bloquee las imágenes por seguridad
+            }).addTo(map);
+            
             rutaInstancia = L.polyline([], {color: '#3498db', weight: 6}).addTo(map);
         };
 
@@ -332,6 +403,7 @@
             ultimoPunto = null; estaDetenido = false;
 
             cambiarPantalla('pantalla-app');
+            setTimeout(() => map.invalidateSize(), 200);
 
             cronometroId = setInterval(() => {
                 segTotales++;
@@ -415,6 +487,16 @@
             if (watchId) navigator.geolocation.clearWatch(watchId);
             if (cronometroId) clearInterval(cronometroId);
             
+            // OPERACIÓN CLAVE: Mudamos el div del mapa dentro del contenedor del Reporte Impreso
+            const objetoMapa = document.getElementById('map');
+            document.getElementById('mapa-reporte-contenedor').appendChild(objetoMapa);
+
+            // Ajustar geometría de Leaflet al nuevo tamaño del reporte
+            setTimeout(() => {
+                map.invalidateSize();
+                if(ultimoPunto) map.setView([ultimoPunto.lat, ultimoPunto.lng], 15);
+            }, 150);
+            
             document.getElementById('rep-corredor').innerText = document.getElementById('in-lugar').value;
             document.getElementById('rep-desde').innerText = document.getElementById('in-desde').value || 'Punto Inicial';
             document.getElementById('rep-hasta').innerText = document.getElementById('in-hasta').value || 'Punto Final';
@@ -443,7 +525,10 @@
         }
 
         function abrirModalObs() { document.getElementById('modal-obs').style.display = 'flex'; }
-        function cerrarModalObs() { document.getElementById('modal-obs').style.display = 'none'; }
+        function cerrarModalObs() { 
+            document.getElementById('modal-obs').style.display = 'none'; 
+            document.getElementById('in-obs-manual').value = ""; // Limpiar campo libre
+        }
         
         function inyectarObservacion(tipoObs) {
             const lat = ultimoPunto ? ultimoPunto.lat : 0;
@@ -461,6 +546,19 @@
                 L.marker([lat, lng]).addTo(map).bindPopup(`<b>Observado:</b> ${tipoObs}`).openPopup();
             }
             cerrarModalObs();
+        }
+
+        // Procesa la entrada de texto manual y libre
+        function procesarObservacionManual() {
+            const inputLibre = document.getElementById('in-obs-manual');
+            const textoLimpio = inputLibre.value.trim();
+            
+            if(!textoLimpio) {
+                alert("Por favor escriba una descripción antes de guardar.");
+                return;
+            }
+            
+            inyectarObservacion(`Nota: ${textoLimpio}`);
         }
 
         function exportarExcel() {
@@ -492,7 +590,7 @@
                 margin:       [12, 12],
                 filename:     `Reporte_Flotante_${document.getElementById('in-lugar').value.replace(/\s+/g, '_')}.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true },
+                html2canvas:  { scale: 2, useCORS: true }, // Forzar uso de CORS para los azulejos del mapa
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
             html2pdf().set(opciones).from(elementoReporte).save();
@@ -538,7 +636,19 @@
             document.getElementById('in-lugar').value = "";
             document.getElementById('in-desde').value = "";
             document.getElementById('in-hasta').value = "";
-            if(rutaInstancia) rutaInstancia.setLatLngs([]);
+            
+            // Remover marcadores viejos y trazas viales de Leaflet
+            map.eachLayer((layer) => {
+                if (layer instanceof L.Marker || layer instanceof L.CircleMarker || layer instanceof L.Polyline) {
+                    map.removeLayer(layer);
+                }
+            });
+            rutaInstancia = L.polyline([], {color: '#3498db', weight: 6}).addTo(map);
+
+            // OPERACIÓN DE RETORNO: Devolvemos el mapa operativo a la Pantalla 2
+            const objetoMapa = document.getElementById('map');
+            document.getElementById('map-wrapper').appendChild(objetoMapa);
+            
             cambiarPantalla('pantalla-config');
         }
     </script>
