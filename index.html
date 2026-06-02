@@ -20,12 +20,17 @@
             --bg-light: #f8f9fa;
         }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        html, body {
+            height: 100%;
             margin: 0;
             padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
             background-color: var(--bg-light);
             height: 100vh;
+            height: 100dvh; /* Solución crucial: Adapta el alto real dinámico en celulares */
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -84,35 +89,38 @@
         }
 
         /* PANTALLA 2: APLICACIÓN / CAPTURA */
-        #map {
-            flex-grow: 1;
-            width: 100%;
-            z-index: 1;
-        }
         #panel-metricas {
             background: var(--primary);
             color: white;
-            padding: 12px;
+            padding: 8px;
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 6px;
             z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
         .metrica {
             background: rgba(255,255,255,0.1);
-            padding: 10px 5px;
+            padding: 6px 3px;
             border-radius: 6px;
             text-align: center;
-            font-size: 0.8em;
+            font-size: 0.75em;
         }
         .metrica span {
             display: block;
-            font-size: 1.2em;
+            font-size: 1.15em;
             font-weight: bold;
             color: var(--accent);
-            margin-top: 4px;
+            margin-top: 2px;
         }
         .metrica.destacada span { color: #f1c40f; }
+
+        #map {
+            flex-grow: 1;
+            width: 100%;
+            min-height: 0; /* Solución crucial: Permite al mapa encogerse sin desbordar el flexbox */
+            z-index: 1;
+        }
 
         /* PANTALLA 3: RESUMEN / EXPORTACIÓN */
         #pantalla-resumen {
@@ -129,7 +137,6 @@
         }
         .card-reporte h2 { margin-top: 0; color: var(--primary); border-bottom: 2px solid #eee; padding-bottom: 10px; }
         
-        /* Tablas Estilizadas */
         .tabla-resumen {
             width: 100%;
             border-collapse: collapse;
@@ -146,11 +153,12 @@
         /* Botoneras y Modales */
         .botonera-fija {
             display: flex;
-            padding: 12px;
+            padding: 10px 12px;
             background: white;
             gap: 10px;
             z-index: 1000;
-            box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
+            box-sizing: border-box;
         }
         .grid-botones-export {
             display: grid;
@@ -159,8 +167,8 @@
             margin-bottom: 15px;
         }
         button {
-            padding: 16px;
-            font-size: 1em;
+            padding: 14px;
+            font-size: 0.95em;
             font-weight: bold;
             border: none;
             border-radius: 8px;
@@ -291,27 +299,23 @@
     </div>
 
     <script>
-        // Control de navegación de pantallas
         function cambiarPantalla(idPantalla) {
             document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('activa'));
             document.getElementById(idPantalla).classList.add('activa');
             if(idPantalla === 'pantalla-app') {
-                setTimeout(() => map.invalidateSize(), 200); // Forzar refresco geométrico de Leaflet
+                setTimeout(() => map.invalidateSize(), 200);
             }
         }
 
-        // Variables de Control de Estado Técnico
         let map, rutaInstancia, watchId = null, cronometroId = null;
         let historialDatos = []; 
-        let registroEventosEspeciales = []; // Guarda solo paradas fijas y observaciones para la tabla resumen
+        let registroEventosEspeciales = []; 
 
-        // Métricas de Ingeniería de Tránsito
         let segTotales = 0, segMovimiento = 0, segFrenadoTotal = 0, segDesdeUltimaParada = 0, distanciaTotalMetros = 0;
         let ultimoPunto = null, estaDetenido = false, inicioParadaTime = null, marcadorParadaActual = null;
 
-        const UMBRAL_VELOCIDAD_PARADA = 4.0; // Velocidad límite en km/h
+        const UMBRAL_VELOCIDAD_PARADA = 4.0;
 
-        // Inicializar entorno cartográfico base
         window.onload = () => {
             map = L.map('map').setView([-32.95, -60.66], 14);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OSM' }).addTo(map);
@@ -323,14 +327,12 @@
                 alert("Debe especificar la vialidad o corredor bajo estudio."); return;
             }
             
-            // Inicializar contadores y vaciar arreglos
             historialDatos = []; registroEventosEspeciales = [];
             segTotales = segMovimiento = segFrenadoTotal = segDesdeUltimaParada = distanciaTotalMetros = 0;
             ultimoPunto = null; estaDetenido = false;
 
             cambiarPantalla('pantalla-app');
 
-            // Habilitar motor de reloj viales
             cronometroId = setInterval(() => {
                 segTotales++;
                 if (estaDetenido) { segFrenadoTotal++; } 
@@ -338,7 +340,6 @@
                 actualizarPanelMetricasUI();
             }, 1000);
 
-            // Encender rastreador de hardware GPS
             if ("geolocation" in navigator) {
                 watchId = navigator.geolocation.watchPosition(procesarTelemetriaGPS, err => console.warn(err), {
                     enableHighAccuracy: true, maximumAge: 0, timeout: 6000
@@ -358,13 +359,12 @@
                 
                 if (deltaTiempoSeg > 0) {
                     velocidadKmh = (distM / deltaTiempoSeg) * 3.6;
-                    if (velocidadKmh < 140) { distanciaTotalMetros += distM; } // Filtrar rebotes de señal
+                    if (velocidadKmh < 140) { distanciaTotalMetros += distM; }
                 }
             }
 
             document.getElementById('txt-velocidad').innerText = velocidadKmh.toFixed(1) + " km/h";
 
-            // Lógica Automática de Paradas/Demoras
             if (velocidadKmh < UMBRAL_VELOCIDAD_PARADA) {
                 if (!estaDetenido) {
                     estaDetenido = true;
@@ -396,7 +396,6 @@
 
             registrarLogGeneral(lat, lng, velocidadKmh, estaDetenido ? "FRENADO" : "MARCHA", "");
             
-            // Actualizar traza en mapa y mover cámara
             const coord = [lat, lng];
             rutaInstancia.addLatLng(coord);
             map.setView(coord, 17);
@@ -416,7 +415,6 @@
             if (watchId) navigator.geolocation.clearWatch(watchId);
             if (cronometroId) clearInterval(cronometroId);
             
-            // Cargar datos en la Pantalla 3 de Reporte
             document.getElementById('rep-corredor').innerText = document.getElementById('in-lugar').value;
             document.getElementById('rep-desde').innerText = document.getElementById('in-desde').value || 'Punto Inicial';
             document.getElementById('rep-hasta').innerText = document.getElementById('in-hasta').value || 'Punto Final';
@@ -431,7 +429,6 @@
             const eficiencia = segTotales > 0 ? ((segMovimiento / segTotales) * 100).toFixed(1) + "% tiempo en marcha" : "0%";
             document.getElementById('rep-eficiencia').innerText = eficiencia;
 
-            // Llenar tabla del reporte de eventos
             const tbody = document.querySelector('#tabla-eventos-detalle tbody');
             tbody.innerHTML = "";
             if(registroEventosEspeciales.length === 0) {
@@ -445,7 +442,6 @@
             cambiarPantalla('pantalla-resumen');
         }
 
-        // --- SISTEMA DE OBSERVACIONES MÓVILES ---
         function abrirModalObs() { document.getElementById('modal-obs').style.display = 'flex'; }
         function cerrarModalObs() { document.getElementById('modal-obs').style.display = 'none'; }
         
@@ -467,13 +463,9 @@
             cerrarModalObs();
         }
 
-        // ================= MOTORES DE EXPORTACIÓN =================
-
-        // 1. MOTOR EXCEL (Genera un libro con dos hojas organizadas)
         function exportarExcel() {
             const wb = XLSX.utils.book_new();
             
-            // Hoja 1: KPI Resumen General
             const resumenAOA = [
                 ["INDICADOR DE TRÁNSITO", "VALOR REGISTRADO"],
                 ["Corredor", document.getElementById('in-lugar').value],
@@ -488,14 +480,12 @@
             const wsResumen = XLSX.utils.aoa_to_sheet(resumenAOA);
             XLSX.utils.book_append_sheet(wb, wsResumen, "Resumen General");
 
-            // Hoja 2: Traza Geoespacial Completa para QGIS / Modelado
             const wsDetalle = XLSX.utils.json_to_sheet(historialDatos);
             XLSX.utils.book_append_sheet(wb, wsDetalle, "Traza Completa GPS");
 
             XLSX.writeFile(wb, `Estudio_Flotante_${document.getElementById('in-lugar').value.replace(/\s+/g, '_')}.xlsx`);
         }
 
-        // 2. MOTOR PDF (Genera reporte visual maquetado para impresión directa)
         function exportarPDF() {
             const elementoReporte = document.getElementById('bloque-reporte-pdf');
             const opciones = {
@@ -508,7 +498,6 @@
             html2pdf().set(opciones).from(elementoReporte).save();
         }
 
-        // 3. MOTOR CSV (Descarga directa estándar)
         function exportarCSV() {
             if(historialDatos.length === 0) return;
             const headers = Object.keys(historialDatos[0]).join(",") + "\n";
@@ -523,7 +512,6 @@
             document.body.removeChild(link);
         }
 
-        // Auxiliares del Sistema
         function actualizarPanelMetricasUI() {
             document.getElementById('txt-t-total').innerText = formatearMinutosSegundos(segTotales);
             document.getElementById('txt-t-mov').innerText = formatearMinutosSegundos(segMovimiento);
@@ -533,7 +521,7 @@
         }
 
         function calcularDistanciaHaversine(lat1, lon1, lat2, lon2) {
-            const R = 6371e3; // Radio terrestre en metros
+            const R = 6371e3;
             const p1 = lat1 * Math.PI/180, p2 = lat2 * Math.PI/180;
             const dPhi = (lat2-lat1) * Math.PI/180, dLambda = (lon2-lon1) * Math.PI/180;
             const a = Math.sin(dPhi/2)**2 + Math.cos(p1)*Math.cos(p2)*Math.sin(dLambda/2)**2;
@@ -547,7 +535,6 @@
         }
 
         function reiniciarApp() {
-            // Limpiar campos y trazas
             document.getElementById('in-lugar').value = "";
             document.getElementById('in-desde').value = "";
             document.getElementById('in-hasta').value = "";
