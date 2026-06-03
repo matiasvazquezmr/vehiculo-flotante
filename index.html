@@ -308,7 +308,7 @@
     <div id="pantalla-resumen" class="pantalla">
         
         <div id="bloque-reporte-pdf" class="card-reporte">
-            <h2>Resumen Ejecutivo de Auditoría</h2>
+            <h2>Resumen De Vehiculo Flotante</h2>
             <table class="tabla-resumen">
                 <tr><th>Parámetro Vial</th><th>Valor Registrado</th></tr>
                 <tr><td>Corredor Analizado</td><td id="rep-corredor" style="font-weight: bold;">-</td></tr>
@@ -318,6 +318,7 @@
                 <tr><td>Tiempo Total de Viaje</td><td id="rep-t-total">-</td></tr>
                 <tr><td>Tiempo Neto en Marcha</td><td id="rep-t-mov" style="color:var(--accent);">-</td></tr>
                 <tr><td>Tiempo de Demora (Frenado)</td><td id="rep-t-frenado" style="color:var(--danger);">-</td></tr>
+                <tr><td>Velocidad Promedio Global</td><td id="rep-vel-promedio" style="font-weight: bold; color:var(--warning);">-</td></tr>
                 <tr><td>Eficiencia de Marcha</td><td id="rep-eficiencia" style="font-weight: bold;">-</td></tr>
             </table>
 
@@ -506,6 +507,10 @@
             document.getElementById('rep-t-mov').innerText = formatearMinutosSegundos(segMovimiento);
             document.getElementById('rep-t-frenado').innerText = formatearMinutosSegundos(segFrenadoTotal);
             
+            // CÁLCULO DE VELOCIDAD PROMEDIO GLOBAL (Distancia total / Tiempo total)
+            const velPromedioText = segTotales > 0 ? ((distanciaTotalMetros / segTotales) * 3.6).toFixed(1) + " km/h" : "0.0 km/h";
+            document.getElementById('rep-vel-promedio').innerText = velPromedioText;
+
             const eficiencia = segTotales > 0 ? ((segMovimiento / segTotales) * 100).toFixed(1) + "% tiempo en marcha" : "0%";
             document.getElementById('rep-eficiencia').innerText = eficiencia;
 
@@ -558,7 +563,6 @@
             inyectarObservacion(`Nota: ${textoLimpio}`);
         }
 
-        // --- SISTEMA DE EMISIÓN BINARIA CRUZADA (EXCEL + REPORT PDF) ---
         function subirAGoogleDrive() {
             if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === "TU_URL_DE_APPS_SCRIPT_AQUI") {
                 alert("Falta configurar la variable APPS_SCRIPT_URL con tu enlace de Apps Script.");
@@ -578,15 +582,12 @@
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            // 1. Renderizar silenciosamente el PDF en memoria como un Blob
             html2pdf().set(opcionesPdf).from(elementoReporte).output('blob').then(function(blob) {
-                // 2. Transmutar el Blob binario a formato Base64 para inyección de texto seguro
                 const reader = new FileReader();
                 reader.readAsDataURL(blob);
                 reader.onloadend = function() {
                     const base64Contenido = reader.result.split(',')[1];
 
-                    // 3. Compilar el JSON unificado de Auditoría Vial
                     const paqueteEstudio = {
                         corredor: document.getElementById('in-lugar').value,
                         desde: document.getElementById('in-desde').value || 'Punto Inicial',
@@ -595,12 +596,12 @@
                         tiempoTotal: formatearMinutosSegundos(segTotales),
                         tiempoMov: formatearMinutosSegundos(segMovimiento),
                         tiempoFrenado: formatearMinutosSegundos(segFrenadoTotal),
+                        velocidadPromedio: document.getElementById('rep-vel-promedio').innerText, // AGREGADO
                         eficiencia: document.getElementById('rep-eficiencia').innerText,
                         historial: historialDatos,
-                        pdfBase64: base64Contenido // Nueva propiedad inyectada
+                        pdfBase64: base64Contenido 
                     };
 
-                    // 4. Despachar petición HTTP POST asíncrona hacia Google
                     fetch(APPS_SCRIPT_URL, {
                         method: "POST",
                         mode: "no-cors",
@@ -633,6 +634,7 @@
                 ["Tiempo Total Viaje", formatearMinutosSegundos(segTotales)],
                 ["Tiempo en Movimiento", formatearMinutosSegundos(segMovimiento)],
                 ["Tiempo Frenado (Demora)", formatearMinutosSegundos(segFrenadoTotal)],
+                ["Velocidad Promedio Global", document.getElementById('rep-vel-promedio').innerText], // AGREGADO LOCAL
                 ["Eficiencia Operativa", document.getElementById('rep-eficiencia').innerText]
             ];
             const wsResumen = XLSX.utils.aoa_to_sheet(resumenAOA);
@@ -676,10 +678,6 @@
             document.getElementById('txt-t-frenado').innerText = formatearMinutosSegundos(segFrenadoTotal);
             document.getElementById('txt-t-entre-paradas').innerText = segDesdeUltimaParada + "s";
             document.getElementById('txt-distancia').innerText = distanciaTotalMetros > 1000 ? (distanciaTotalMetros/1000).toFixed(2) + " km" : Math.floor(distanciaTotalMetros) + " m";
-        }
-
-        function calcularDistanceHaversine(lat1, lon1, lat2, lon2) {
-            return calcularDistanciaHaversine(lat1, lon1, lat2, lon2);
         }
 
         function calcularDistanciaHaversine(lat1, lon1, lat2, lon2) {
