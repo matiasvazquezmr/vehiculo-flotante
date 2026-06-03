@@ -17,6 +17,7 @@
             --danger: #e74c3c;
             --warning: #f39c12;
             --info: #3498db;
+            --drive: #1ea362;
             --bg-light: #f8f9fa;
         }
 
@@ -157,7 +158,6 @@
         }
         .tabla-resumen th { background-color: #f8f9fa; color: var(--primary); font-weight: bold; }
 
-        /* Contenedor del Mapa dentro del Reporte Impreso */
         #mapa-reporte-contenedor {
             height: 350px;
             width: 100%;
@@ -199,6 +199,7 @@
         .btn-alerta { background: var(--danger); color: white; }
         .btn-warning { background: var(--warning); color: white; }
         .btn-info { background: var(--info); color: white; }
+        .btn-drive { background: var(--drive); color: white; }
         .btn-outline { background: #7f8c8d; color: white; }
 
         /* Modal de Observaciones */
@@ -227,7 +228,6 @@
         }
         .btn-obs-opcion { background: #ecf0f1; color: var(--primary); font-size: 0.85em; text-transform: none; padding: 12px 5px; }
 
-        /* Contenedor Campo de Observación Libre */
         .seccion-obs-libre {
             border-top: 1px solid #e0e0e0;
             margin-top: 15px;
@@ -308,7 +308,7 @@
     <div id="pantalla-resumen" class="pantalla">
         
         <div id="bloque-reporte-pdf" class="card-reporte">
-            <h2>Resumen De Vehiculo Flotante</h2>
+            <h2>Resumen Ejecutivo de Auditoría</h2>
             <table class="tabla-resumen">
                 <tr><th>Parámetro Vial</th><th>Valor Registrado</th></tr>
                 <tr><td>Corredor Analizado</td><td id="rep-corredor" style="font-weight: bold;">-</td></tr>
@@ -330,11 +330,13 @@
                     <tr><th>Hora</th><th>Evento</th><th>Métrica / Detalle</th></tr>
                 </thead>
                 <tbody>
-                    </tbody>
+                </tbody>
             </table>
         </div>
 
         <div class="grid-botones-export">
+            <button class="btn-drive" id="btn-subir-drive" onclick="subirAGoogleDrive()">☁️ Guardar en Google Drive</button>
+            
             <button class="btn-warning" onclick="exportarExcel()">Exportar a MS Excel (.xlsx)</button>
             <button class="btn-info" onclick="exportarPDF()">Exportar Reporte PDF (.pdf)</button>
             <button class="btn-accion" onclick="exportarCSV()">Descargar Datos Crudos (.csv)</button>
@@ -367,6 +369,9 @@
     </div>
 
     <script>
+        // CONFIGURACIÓN DEL BACKEND: Pegá acá la URL de implementación de tu Google Apps Script
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw1ClW4OQNlv7aAE6NwepFi-Ldz_t8jBqesUsR7VN7TS4lOfZPrWn92e4DyaSe-O1bJ/exec";
+
         function cambiarPantalla(idPantalla) {
             document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('activa'));
             document.getElementById(idPantalla).classList.add('activa');
@@ -382,14 +387,10 @@
         const UMBRAL_VELOCIDAD_PARADA = 4.0;
 
         window.onload = () => {
-            // Inicialización con preferCanvas para optimizar la exportación geométrica en html2canvas
             map = L.map('map', { preferCanvas: true }).setView([-32.95, -60.66], 14);
-            
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { 
-                attribution: '© OSM',
-                crossOrigin: true // Requerido para evitar que html2canvas bloquee las imágenes por seguridad
+                attribution: '© OSM', crossOrigin: true 
             }).addTo(map);
-            
             rutaInstancia = L.polyline([], {color: '#3498db', weight: 6}).addTo(map);
         };
 
@@ -487,11 +488,9 @@
             if (watchId) navigator.geolocation.clearWatch(watchId);
             if (cronometroId) clearInterval(cronometroId);
             
-            // OPERACIÓN CLAVE: Mudamos el div del mapa dentro del contenedor del Reporte Impreso
             const objetoMapa = document.getElementById('map');
             document.getElementById('mapa-reporte-contenedor').appendChild(objetoMapa);
 
-            // Ajustar geometría de Leaflet al nuevo tamaño del reporte
             setTimeout(() => {
                 map.invalidateSize();
                 if(ultimoPunto) map.setView([ultimoPunto.lat, ultimoPunto.lng], 15);
@@ -521,13 +520,19 @@
                 });
             }
 
+            // Restaurar estado del botón de Drive al iniciar una nueva visualización de resumen
+            const btnDrive = document.getElementById('btn-subir-drive');
+            btnDrive.innerText = "☁️ Guardar en Google Drive";
+            btnDrive.disabled = false;
+            btnDrive.style.backgroundColor = "var(--drive)";
+
             cambiarPantalla('pantalla-resumen');
         }
 
         function abrirModalObs() { document.getElementById('modal-obs').style.display = 'flex'; }
         function cerrarModalObs() { 
             document.getElementById('modal-obs').style.display = 'none'; 
-            document.getElementById('in-obs-manual').value = ""; // Limpiar campo libre
+            document.getElementById('in-obs-manual').value = ""; 
         }
         
         function inyectarObservacion(tipoObs) {
@@ -548,22 +553,60 @@
             cerrarModalObs();
         }
 
-        // Procesa la entrada de texto manual y libre
         function procesarObservacionManual() {
             const inputLibre = document.getElementById('in-obs-manual');
             const textoLimpio = inputLibre.value.trim();
-            
-            if(!textoLimpio) {
-                alert("Por favor escriba una descripción antes de guardar.");
+            if(!textoLimpio) { alert("Por favor escriba una descripción antes de guardar."); return; }
+            inyectarObservacion(`Nota: ${textoLimpio}`);
+        }
+
+        // --- ENLACE CON LA NUBE (GOOGLE DRIVE API HTTP POST) ---
+        function subirAGoogleDrive() {
+            if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === "TU_URL_DE_APPS_SCRIPT_AQUI") {
+                alert("Falta configurar la variable APPS_SCRIPT_URL con tu enlace de Apps Script.");
                 return;
             }
-            
-            inyectarObservacion(`Nota: ${textoLimpio}`);
+
+            const btn = document.getElementById('btn-subir-drive');
+            btn.innerText = "🔄 Subiendo datos...";
+            btn.disabled = true;
+            btn.style.backgroundColor = "#7f8c8d";
+
+            // Armar el paquete consolidado estructurado
+            const paqueteEstudio = {
+                corredor: document.getElementById('in-lugar').value,
+                desde: document.getElementById('in-desde').value || 'Punto Inicial',
+                hasta: document.getElementById('in-hasta').value || 'Punto Final',
+                distancia: document.getElementById('rep-distancia').innerText,
+                tiempoTotal: formatearMinutosSegundos(segTotales),
+                tiempoMov: formatearMinutosSegundos(segMovimiento),
+                tiempoFrenado: formatearMinutosSegundos(segFrenadoTotal),
+                eficiencia: document.getElementById('rep-eficiencia').innerText,
+                historial: historialDatos
+            };
+
+            // Ejecutar la petición HTTP POST asíncrona hacia los servidores de Google
+            fetch(APPS_SCRIPT_URL, {
+                method: "POST",
+                mode: "no-cors", // Evita bloqueos de seguridad de políticas CORS cruzadas en móviles
+                headers: { "Content-Type": "text/plain" },
+                body: JSON.stringify(paqueteEstudio)
+            })
+            .then(() => {
+                alert("¡Estudio guardado correctamente! Se ha generado una planilla Excel en tu Google Drive.");
+                btn.innerText = "✅ ¡Subido con éxito!";
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Error de conexión al enviar el estudio a Drive.");
+                btn.innerText = "☁️ Intentar de nuevo";
+                btn.disabled = false;
+                btn.style.backgroundColor = "var(--drive)";
+            });
         }
 
         function exportarExcel() {
             const wb = XLSX.utils.book_new();
-            
             const resumenAOA = [
                 ["INDICADOR DE TRÁNSITO", "VALOR REGISTRADO"],
                 ["Corredor", document.getElementById('in-lugar').value],
@@ -590,7 +633,7 @@
                 margin:       [12, 12],
                 filename:     `Reporte_Flotante_${document.getElementById('in-lugar').value.replace(/\s+/g, '_')}.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true }, // Forzar uso de CORS para los azulejos del mapa
+                html2canvas:  { scale: 2, useCORS: true },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
             html2pdf().set(opciones).from(elementoReporte).save();
@@ -614,6 +657,7 @@
             document.getElementById('txt-t-total').innerText = formatearMinutosSegundos(segTotales);
             document.getElementById('txt-t-mov').innerText = formatearMinutosSegundos(segMovimiento);
             document.getElementById('txt-t-frenado').innerText = formatearMinutosSegundos(segFrenadoTotal);
+            document.getElementById('txt-txt-t-entre-paradas');
             document.getElementById('txt-t-entre-paradas').innerText = segDesdeUltimaParada + "s";
             document.getElementById('txt-distancia').innerText = distanciaTotalMetros > 1000 ? (distanciaTotalMetros/1000).toFixed(2) + " km" : Math.floor(distanciaTotalMetros) + " m";
         }
@@ -637,7 +681,6 @@
             document.getElementById('in-desde').value = "";
             document.getElementById('in-hasta').value = "";
             
-            // Remover marcadores viejos y trazas viales de Leaflet
             map.eachLayer((layer) => {
                 if (layer instanceof L.Marker || layer instanceof L.CircleMarker || layer instanceof L.Polyline) {
                     map.removeLayer(layer);
@@ -645,7 +688,6 @@
             });
             rutaInstancia = L.polyline([], {color: '#3498db', weight: 6}).addTo(map);
 
-            // OPERACIÓN DE RETORNO: Devolvemos el mapa operativo a la Pantalla 2
             const objetoMapa = document.getElementById('map');
             document.getElementById('map-wrapper').appendChild(objetoMapa);
             
