@@ -336,7 +336,6 @@
 
         <div class="grid-botones-export">
             <button class="btn-drive" id="btn-subir-drive" onclick="subirAGoogleDrive()">☁️ Guardar en Google Drive</button>
-            
             <button class="btn-warning" onclick="exportarExcel()">Exportar a MS Excel (.xlsx)</button>
             <button class="btn-info" onclick="exportarPDF()">Exportar Reporte PDF (.pdf)</button>
             <button class="btn-accion" onclick="exportarCSV()">Descargar Datos Crudos (.csv)</button>
@@ -520,7 +519,6 @@
                 });
             }
 
-            // Restaurar estado del botón de Drive al iniciar una nueva visualización de resumen
             const btnDrive = document.getElementById('btn-subir-drive');
             btnDrive.innerText = "☁️ Guardar en Google Drive";
             btnDrive.disabled = false;
@@ -560,7 +558,7 @@
             inyectarObservacion(`Nota: ${textoLimpio}`);
         }
 
-        // --- ENLACE CON LA NUBE (GOOGLE DRIVE API HTTP POST) ---
+        // --- SISTEMA DE EMISIÓN BINARIA CRUZADA (EXCEL + REPORT PDF) ---
         function subirAGoogleDrive() {
             if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === "TU_URL_DE_APPS_SCRIPT_AQUI") {
                 alert("Falta configurar la variable APPS_SCRIPT_URL con tu enlace de Apps Script.");
@@ -568,40 +566,59 @@
             }
 
             const btn = document.getElementById('btn-subir-drive');
-            btn.innerText = "🔄 Subiendo datos...";
+            btn.innerText = "🔄 Generando PDF y subiendo...";
             btn.disabled = true;
             btn.style.backgroundColor = "#7f8c8d";
 
-            // Armar el paquete consolidado estructurado
-            const paqueteEstudio = {
-                corredor: document.getElementById('in-lugar').value,
-                desde: document.getElementById('in-desde').value || 'Punto Inicial',
-                hasta: document.getElementById('in-hasta').value || 'Punto Final',
-                distancia: document.getElementById('rep-distancia').innerText,
-                tiempoTotal: formatearMinutosSegundos(segTotales),
-                tiempoMov: formatearMinutosSegundos(segMovimiento),
-                tiempoFrenado: formatearMinutosSegundos(segFrenadoTotal),
-                eficiencia: document.getElementById('rep-eficiencia').innerText,
-                historial: historialDatos
+            const elementoReporte = document.getElementById('bloque-reporte-pdf');
+            const opcionesPdf = {
+                margin:       [12, 12],
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            // Ejecutar la petición HTTP POST asíncrona hacia los servidores de Google
-            fetch(APPS_SCRIPT_URL, {
-                method: "POST",
-                mode: "no-cors", // Evita bloqueos de seguridad de políticas CORS cruzadas en móviles
-                headers: { "Content-Type": "text/plain" },
-                body: JSON.stringify(paqueteEstudio)
-            })
-            .then(() => {
-                alert("¡Estudio guardado correctamente! Se ha generado una planilla Excel en tu Google Drive.");
-                btn.innerText = "✅ ¡Subido con éxito!";
-            })
-            .catch(err => {
-                console.error(err);
-                alert("Error de conexión al enviar el estudio a Drive.");
-                btn.innerText = "☁️ Intentar de nuevo";
-                btn.disabled = false;
-                btn.style.backgroundColor = "var(--drive)";
+            // 1. Renderizar silenciosamente el PDF en memoria como un Blob
+            html2pdf().set(opcionesPdf).from(elementoReporte).output('blob').then(function(blob) {
+                // 2. Transmutar el Blob binario a formato Base64 para inyección de texto seguro
+                const reader = new FileReader();
+                reader.readAsDataURL(blob);
+                reader.onloadend = function() {
+                    const base64Contenido = reader.result.split(',')[1];
+
+                    // 3. Compilar el JSON unificado de Auditoría Vial
+                    const paqueteEstudio = {
+                        corredor: document.getElementById('in-lugar').value,
+                        desde: document.getElementById('in-desde').value || 'Punto Inicial',
+                        hasta: document.getElementById('in-hasta').value || 'Punto Final',
+                        distancia: document.getElementById('rep-distancia').innerText,
+                        tiempoTotal: formatearMinutosSegundos(segTotales),
+                        tiempoMov: formatearMinutosSegundos(segMovimiento),
+                        tiempoFrenado: formatearMinutosSegundos(segFrenadoTotal),
+                        eficiencia: document.getElementById('rep-eficiencia').innerText,
+                        historial: historialDatos,
+                        pdfBase64: base64Contenido // Nueva propiedad inyectada
+                    };
+
+                    // 4. Despachar petición HTTP POST asíncrona hacia Google
+                    fetch(APPS_SCRIPT_URL, {
+                        method: "POST",
+                        mode: "no-cors",
+                        headers: { "Content-Type": "text/plain" },
+                        body: JSON.stringify(paqueteEstudio)
+                    })
+                    .then(() => {
+                        alert("¡Estudio guardado correctamente! Se han generado la planilla Excel y el reporte PDF en tu carpeta de Google Drive.");
+                        btn.innerText = "✅ ¡Subido con éxito!";
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        alert("Error de conexión al enviar el estudio a Drive.");
+                        btn.innerText = "☁️ Intentar de nuevo";
+                        btn.disabled = false;
+                        btn.style.backgroundColor = "var(--drive)";
+                    });
+                };
             });
         }
 
@@ -657,9 +674,12 @@
             document.getElementById('txt-t-total').innerText = formatearMinutosSegundos(segTotales);
             document.getElementById('txt-t-mov').innerText = formatearMinutosSegundos(segMovimiento);
             document.getElementById('txt-t-frenado').innerText = formatearMinutosSegundos(segFrenadoTotal);
-            document.getElementById('txt-txt-t-entre-paradas');
             document.getElementById('txt-t-entre-paradas').innerText = segDesdeUltimaParada + "s";
             document.getElementById('txt-distancia').innerText = distanciaTotalMetros > 1000 ? (distanciaTotalMetros/1000).toFixed(2) + " km" : Math.floor(distanciaTotalMetros) + " m";
+        }
+
+        function calcularDistanceHaversine(lat1, lon1, lat2, lon2) {
+            return calcularDistanciaHaversine(lat1, lon1, lat2, lon2);
         }
 
         function calcularDistanciaHaversine(lat1, lon1, lat2, lon2) {
