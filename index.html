@@ -308,7 +308,7 @@
     <div id="pantalla-resumen" class="pantalla">
         
         <div id="bloque-reporte-pdf" class="card-reporte">
-            <h2>Resumen De Vehiculo Flotante</h2>
+            <h2>Resumen - Recorrido Vehiculo Flotante</h2>
             <table class="tabla-resumen">
                 <tr><th>Parámetro Vial</th><th>Valor Registrado</th></tr>
                 <tr><td>Corredor Analizado</td><td id="rep-corredor" style="font-weight: bold;">-</td></tr>
@@ -325,7 +325,7 @@
             <h3 style="margin-top:25px; margin-bottom:5px; color: var(--primary);">Croquis Espacial y Puntos de Interés</h3>
             <div id="mapa-reporte-contenedor"></div>
 
-            <h3 style="margin-top:25px; color: var(--primary);">Historial de Eventos y Observaciones</h3>
+            <h3 style="margin-top:25px; color: var(--primary);">Historial de Eventos y Observations</h3>
             <table class="tabla-resumen" id="tabla-eventos-detalle">
                 <thead>
                     <tr><th>Hora</th><th>Evento</th><th>Métrica / Detalle</th></tr>
@@ -370,7 +370,7 @@
 
     <script>
         // CONFIGURACIÓN DEL BACKEND: Pegá acá la URL de implementación de tu Google Apps Script
-        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyfi-Mts-p10ggCYNePlVILcWjeatTZaajXnakbCEnfJSTBufnMkaIzAr1ihUnwY4tWGg/exec";
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwStYznyBUKeMW0ir2uqR5PFM92Mzb-1lIWpz4cfTt2krJBI-ZVvHb73w3Wm4G7OQL9/exec";
 
         function cambiarPantalla(idPantalla) {
             document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('activa'));
@@ -507,7 +507,6 @@
             document.getElementById('rep-t-mov').innerText = formatearMinutosSegundos(segMovimiento);
             document.getElementById('rep-t-frenado').innerText = formatearMinutosSegundos(segFrenadoTotal);
             
-            // CÁLCULO DE VELOCIDAD PROMEDIO GLOBAL (Distancia total / Tiempo total)
             const velPromedioText = segTotales > 0 ? ((distanciaTotalMetros / segTotales) * 3.6).toFixed(1) + " km/h" : "0.0 km/h";
             document.getElementById('rep-vel-promedio').innerText = velPromedioText;
 
@@ -563,6 +562,7 @@
             inyectarObservacion(`Nota: ${textoLimpio}`);
         }
 
+        // --- SISTEMA DE EMISIÓN DE REPORTE INTERACTIVO HTML + SHEET ---
         function subirAGoogleDrive() {
             if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === "TU_URL_DE_APPS_SCRIPT_AQUI") {
                 alert("Falta configurar la variable APPS_SCRIPT_URL con tu enlace de Apps Script.");
@@ -570,56 +570,86 @@
             }
 
             const btn = document.getElementById('btn-subir-drive');
-            btn.innerText = "🔄 Generando PDF y subiendo...";
+            btn.innerText = "🔄 Generando HTML y subiendo...";
             btn.disabled = true;
             btn.style.backgroundColor = "#7f8c8d";
 
-            const elementoReporte = document.getElementById('bloque-reporte-pdf');
-            const opcionesPdf = {
-                margin:       [12, 12],
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
+            // 1. Capturar el mapa como una imagen estática usando el canvas expuesto por html2pdf/html2canvas
+            html2canvas(document.getElementById('map'), { useCORS: true }).then(function(canvas) {
+                const mapaImageBase64 = canvas.toDataURL('image/png');
 
-            html2pdf().set(opcionesPdf).from(elementoReporte).output('blob').then(function(blob) {
-                const reader = new FileReader();
-                reader.readAsDataURL(blob);
-                reader.onloadend = function() {
-                    const base64Contenido = reader.result.split(',')[1];
+                // 2. Clonar el reporte para manipularlo limpiamente en memoria
+                let reporteClon = document.getElementById('bloque-reporte-pdf').cloneNode(true);
+                
+                // Sustituir el visor vivo del mapa por la imagen rasterizada estática
+                let contenedorMapaClon = reporteClon.querySelector('#mapa-reporte-contenedor');
+                if (contenedorMapaClon) {
+                    contenedorMapaClon.innerHTML = `<img src="${mapaImageBase64}" style="width:100%; height:auto; border-radius:10px; border:1px solid #bdc3c7;">`;
+                }
 
-                    const paqueteEstudio = {
-                        corredor: document.getElementById('in-lugar').value,
-                        desde: document.getElementById('in-desde').value || 'Punto Inicial',
-                        hasta: document.getElementById('in-hasta').value || 'Punto Final',
-                        distancia: document.getElementById('rep-distancia').innerText,
-                        tiempoTotal: formatearMinutosSegundos(segTotales),
-                        tiempoMov: formatearMinutosSegundos(segMovimiento),
-                        tiempoFrenado: formatearMinutosSegundos(segFrenadoTotal),
-                        velocidadPromedio: document.getElementById('rep-vel-promedio').innerText, // AGREGADO
-                        eficiencia: document.getElementById('rep-eficiencia').innerText,
-                        historial: historialDatos,
-                        pdfBase64: base64Contenido 
-                    };
+                // 3. Definir estilos CSS optimizados para el archivo HTML autónomo resultante
+                const estilosInformeHtml = `
+                    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; padding: 30px; background-color: #f4f6f7; color: #333; line-height: 1.5; }
+                    .card-reporte { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); max-width: 850px; margin: 0 auto; box-sizing: border-box; }
+                    h2 { color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 0; font-size: 1.6em; }
+                    h3 { color: #2c3e50; margin-top: 25px; font-size: 1.25em; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+                    .tabla-resumen { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.95em; }
+                    .tabla-resumen th, .tabla-resumen td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #e0e0e0; }
+                    .tabla-resumen th { background-color: #f8f9fa; color: #2c3e50; font-weight: bold; }
+                    tr:hover { background-color: #f9f9f9; }
+                `;
 
-                    fetch(APPS_SCRIPT_URL, {
-                        method: "POST",
-                        mode: "no-cors",
-                        headers: { "Content-Type": "text/plain" },
-                        body: JSON.stringify(paqueteEstudio)
-                    })
-                    .then(() => {
-                        alert("¡Estudio guardado correctamente! Se han generado la planilla Excel y el reporte PDF en tu carpeta de Google Drive.");
-                        btn.innerText = "✅ ¡Subido con éxito!";
-                    })
-                    .catch(err => {
-                        console.error(err);
-                        alert("Error de conexión al enviar el estudio a Drive.");
-                        btn.innerText = "☁️ Intentar de nuevo";
-                        btn.disabled = false;
-                        btn.style.backgroundColor = "var(--drive)";
-                    });
+                // 4. Armar el documento estructurado completo
+                const documentoHtmlCompleto = `<!DOCTYPE html>
+                <html lang="es">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Reporte Técnico de Vehículo Flotante</title>
+                    <style>${estilosInformeHtml}</style>
+                </head>
+                <body>
+                    <div class="card-reporte">
+                        ${reporteClon.innerHTML}
+                    </div>
+                </body>
+                </html>`;
+
+                // Comprimir a cadena binaria Base64 compatible con UTF-8
+                const base64ContenidoHtml = btoa(unescape(encodeURIComponent(documentoHtmlCompleto)));
+
+                // 5. Estructurar el paquete JSON de envío
+                const paqueteEstudio = {
+                    corredor: document.getElementById('in-lugar').value,
+                    desde: document.getElementById('in-desde').value || 'Punto Inicial',
+                    hasta: document.getElementById('in-hasta').value || 'Punto Final',
+                    distancia: document.getElementById('rep-distancia').innerText,
+                    tiempoTotal: formatearMinutosSegundos(segTotales),
+                    tiempoMov: formatearMinutosSegundos(segMovimiento),
+                    tiempoFrenado: formatearMinutosSegundos(segFrenadoTotal),
+                    velocidadPromedio: document.getElementById('rep-vel-promedio').innerText,
+                    eficiencia: document.getElementById('rep-eficiencia').innerText,
+                    historial: historialDatos,
+                    htmlBase64: base64ContenidoHtml // Nueva propiedad HTML inyectada
                 };
+
+                fetch(APPS_SCRIPT_URL, {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: { "Content-Type": "text/plain" },
+                    body: JSON.stringify(paqueteEstudio)
+                })
+                .then(() => {
+                    alert("¡Estudio guardado correctamente! Se han generado la planilla Excel y el informe interactivo HTML en tu carpeta de Google Drive.");
+                    btn.innerText = "✅ ¡Subido con éxito!";
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert("Error de conexión al enviar el estudio a Drive.");
+                    btn.innerText = "☁️ Intentar de nuevo";
+                    btn.disabled = false;
+                    btn.style.backgroundColor = "var(--drive)";
+                });
             });
         }
 
@@ -634,7 +664,7 @@
                 ["Tiempo Total Viaje", formatearMinutosSegundos(segTotales)],
                 ["Tiempo en Movimiento", formatearMinutosSegundos(segMovimiento)],
                 ["Tiempo Frenado (Demora)", formatearMinutosSegundos(segFrenadoTotal)],
-                ["Velocidad Promedio Global", document.getElementById('rep-vel-promedio').innerText], // AGREGADO LOCAL
+                ["Velocidad Promedio Global", document.getElementById('rep-vel-promedio').innerText],
                 ["Eficiencia Operativa", document.getElementById('rep-eficiencia').innerText]
             ];
             const wsResumen = XLSX.utils.aoa_to_sheet(resumenAOA);
