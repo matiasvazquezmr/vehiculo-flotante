@@ -357,7 +357,7 @@
             </div>
             
             <div class="seccion-obs-libre">
-                <label>✏️ Otro Evento (Descripción Libre):</label>
+                <label>✏️ Otro Evento:</label>
                 <div class="wrapper-input-libre">
                     <input type="text" id="in-obs-manual" placeholder="Ej: Bache profundo, Semáforo roto...">
                     <button class="btn-guardar-libre" onclick="procesarObservacionManual()">Guardar</button>
@@ -564,13 +564,13 @@
 
         // --- SISTEMA QUARTO-LIKE: EMISIÓN DE REPORTE HTML TOTALMENTE INTERACTIVO VIVO ---
         function subirAGoogleDrive() {
-            if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === "TU_URL_DE_APPS_SCRIPT_AQUI" || APPS_SCRIPT_URL.trim() === "") {
+            if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === "https://script.google.com/macros/s/AKfycbwStYznyBUKeMW0ir2uqR5PFM92Mzb-1lIWpz4cfTt2krJBI-ZVvHb73w3Wm4G7OQL9/exec" || APPS_SCRIPT_URL.trim() === "") {
                 alert("Por favor configura tu URL real de Google Apps Script en la variable APPS_SCRIPT_URL (línea 172).");
                 return;
             }
 
             const btn = document.getElementById('btn-subir-drive');
-            btn.innerText = "🔄 Compilando Informe Quarto...";
+            btn.innerText = "🔄 Compilando Informe";
             btn.disabled = true;
             btn.style.backgroundColor = "#7f8c8d";
 
