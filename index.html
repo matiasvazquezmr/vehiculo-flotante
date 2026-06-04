@@ -308,7 +308,7 @@
     <div id="pantalla-resumen" class="pantalla">
         
         <div id="bloque-reporte-pdf" class="card-reporte">
-            <h2>Resumen Ejecutivo de Auditoría</h2>
+            <h2>Resumen Vehiculo Flotante</h2>
             <table class="tabla-resumen">
                 <tr><th>Parámetro Vial</th><th>Valor Registrado</th></tr>
                 <tr><td>Corredor Analizado</td><td id="rep-corredor" style="font-weight: bold;">-</td></tr>
@@ -630,7 +630,7 @@
                 <div class="card-reporte">
                     <button class="btn-quarto-print" onclick="window.print()">📄 Exportar a PDF / Imprimir Reporte</button>
                     
-                    <h2>Resumen Ejecutivo de Auditoría</h2>
+                    <h2>Resumen Vehiculo Flotante</h2>
                     <table class="tabla-resumen">
                         <tr><th>Parámetro Vial</th><th>Valor Registrado</th></tr>
                         <tr><td>Corredor Analizado</td><td style="font-weight: bold;">${corredor}</td></tr>
@@ -713,7 +713,7 @@
                 body: JSON.stringify(paqueteEstudio)
             })
             .then(() => {
-                alert("¡Estudio guardado! Se han generado la planilla Excel y el reporte dinámico interactivo estilo Quarto en tu Google Drive.");
+                alert("¡Estudio guardado! Se han generado la planilla Excel y el reporte dinámico interactivo en tu Google Drive.");
                 btn.innerText = "✅ ¡Subido con éxito!";
             })
             .catch(err => {
