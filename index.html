@@ -550,7 +550,7 @@
             });
 
             if(ultimoPunto) {
-                L.marker([lat, lng]).addTo(map).bindPopup Pisado = `<b>Observado:</b> ${tipoObs}`;
+                L.marker([lat, lng]).addTo(map).bindPopup(`<b>Observado:</b> ${tipoObs}`).openPopup();
             }
             cerrarModalObs();
         }
@@ -658,7 +658,7 @@
                     </table>
                 </div>
 
-                <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+                <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"><\/script>
                 <script>
                     const trazaGps = ${JSON.stringify(historialDatos)};
                     
@@ -686,7 +686,7 @@
                             }
                         });
                     }
-                </script>
+                <\/script>
             </body>
             </html>`;
 
