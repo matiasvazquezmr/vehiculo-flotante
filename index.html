@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
@@ -551,7 +550,7 @@
             });
 
             if(ultimoPunto) {
-                L.marker([lat, lng]).addTo(map).bindPopup(`<b>Observado:</b> ${tipoObs}`).openPopup();
+                L.marker([lat, lng]).addTo(map).bindPopup Pisado = `<b>Observado:</b> ${tipoObs}`;
             }
             cerrarModalObs();
         }
@@ -563,7 +562,7 @@
             inyectarObservacion(`Nota: ${textoLimpio}`);
         }
 
-        // --- SISTEMA TOLERANTE A FALLOS PARA SUBIR EXCEL + INFORME HTML ---
+        // --- SISTEMA QUARTO-LIKE: EMISIÓN DE REPORTE HTML TOTALMENTE INTERACTIVO VIVO ---
         function subirAGoogleDrive() {
             if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === "TU_URL_DE_APPS_SCRIPT_AQUI" || APPS_SCRIPT_URL.trim() === "") {
                 alert("Por favor configura tu URL real de Google Apps Script en la variable APPS_SCRIPT_URL (línea 172).");
@@ -571,111 +570,159 @@
             }
 
             const btn = document.getElementById('btn-subir-drive');
-            btn.innerText = "🔄 Generando HTML y subiendo...";
+            btn.innerText = "🔄 Compilando Informe Quarto...";
             btn.disabled = true;
             btn.style.backgroundColor = "#7f8c8d";
 
-            // Función interna para empaquetar y despachar el JSON pase lo que pase con el mapa
-            function despacharDatosServidor(mapaImageBase64) {
-                let reporteClon = document.getElementById('bloque-reporte-pdf').cloneNode(true);
-                let contenedorMapaClon = reporteClon.querySelector('#mapa-reporte-contenedor');
-                
-                if (contenedorMapaClon) {
-                    if (mapaImageBase64) {
-                        contenedorMapaClon.innerHTML = `<img src="${mapaImageBase64}" style="width:100%; height:auto; border-radius:10px; border:1px solid #bdc3c7;">`;
-                    } else {
-                        contenedorMapaClon.innerHTML = `<div style="padding:25px; border:1px solid #bdc3c7; border-radius:10px; text-align:center; color:#7f8c8d; background:#f8f9fa; font-weight:bold;">Croquis Cartográfico no disponible en este reporte</div>`;
-                    }
-                }
+            const corredor = document.getElementById('in-lugar').value;
+            const desde = document.getElementById('in-desde').value || 'Punto Inicial';
+            const hasta = document.getElementById('in-hasta').value || 'Punto Final';
+            const distancia = document.getElementById('rep-distancia').innerText;
+            const tiempoTotal = formatearMinutosSegundos(segTotales);
+            const tiempoMov = formatearMinutosSegundos(segMovimiento);
+            const tiempoFrenado = formatearMinutosSegundos(segFrenadoTotal);
+            const velocidadPromedio = document.getElementById('rep-vel-promedio').innerText;
+            const eficiencia = document.getElementById('rep-eficiencia').innerText;
 
-                const estilosInformeHtml = `
-                    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; padding: 30px; background-color: #f4f6f7; color: #333; line-height: 1.5; }
-                    .card-reporte { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); max-width: 850px; margin: 0 auto; box-sizing: border-box; }
-                    h2 { color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 0; font-size: 1.6em; }
-                    h3 { color: #2c3e50; margin-top: 25px; font-size: 1.25em; border-bottom: 1px solid #eee; padding-bottom: 5px; }
-                    .tabla-resumen { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.95em; }
-                    .tabla-resumen th, .tabla-resumen td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #e0e0e0; }
-                    .tabla-resumen th { background-color: #f8f9fa; color: #2c3e50; font-weight: bold; }
-                `;
-
-                const documentoHtmlCompleto = `<!DOCTYPE html>
-                <html lang="es">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Reporte Técnico de Vehículo Flotante</title>
-                    <style>${estilosInformeHtml}</style>
-                </head>
-                <body>
-                    <div class="card-reporte">${reporteClon.innerHTML}</div>
-                </body>
-                </html>`;
-
-                let base64ContenidoHtml = "";
-                try {
-                    base64ContenidoHtml = btoa(unescape(encodeURIComponent(documentoHtmlCompleto)));
-                } catch (err) {
-                    alert("Error crítico al codificar el texto del informe.");
-                    restaurarBotonError(); return;
-                }
-
-                const paqueteEstudio = {
-                    corredor: document.getElementById('in-lugar').value,
-                    desde: document.getElementById('in-desde').value || 'Punto Inicial',
-                    hasta: document.getElementById('in-hasta').value || 'Punto Final',
-                    distancia: document.getElementById('rep-distancia').innerText,
-                    tiempoTotal: formatearMinutosSegundos(segTotales),
-                    tiempoMov: formatearMinutosSegundos(segMovimiento),
-                    tiempoFrenado: formatearMinutosSegundos(segFrenadoTotal),
-                    velocidadPromedio: document.getElementById('rep-vel-promedio').innerText,
-                    eficiencia: document.getElementById('rep-eficiencia').innerText,
-                    historial: historialDatos,
-                    htmlBase64: base64ContenidoHtml
-                };
-
-                fetch(APPS_SCRIPT_URL, {
-                    method: "POST",
-                    mode: "no-cors",
-                    headers: { "Content-Type": "text/plain" },
-                    body: JSON.stringify(paqueteEstudio)
-                })
-                .then(() => {
-                    alert("¡Estudio guardado correctamente! Se han generado la planilla Excel y el informe interactivo HTML en tu carpeta de Google Drive.");
-                    btn.innerText = "✅ ¡Subido con éxito!";
-                })
-                .catch(err => {
-                    console.error(err);
-                    alert("Error de conexión con los servidores de Google. Revisa tu señal.");
-                    restaurarBotonError();
+            let filasEventosHtml = "";
+            if(registroEventosEspeciales.length === 0) {
+                filasEventosHtml = "<tr><td colspan='3' style='text-align:center; color:#95a5a6;'>No se registraron demoras ni observaciones.</td></tr>";
+            } else {
+                registroEventosEspeciales.forEach(ev => {
+                    filasEventosHtml += `<tr><td>${ev.hora}</td><td>${ev.evento}</td><td>${ev.detalle}</td></tr>`;
                 });
             }
 
-            function restaurarBotonError() {
+            // Inyección de estilos interactivos con paleta corporativa y @media print para Quarto output
+            const estilosInformeHtml = `
+                :root { --primary: #2c3e50; --accent: #2ecc71; --danger: #e74c3c; --warning: #f39c12; --info: #3498db; }
+                body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; padding: 30px; background-color: #f4f6f7; color: #333; margin: 0; }
+                .card-reporte { background: white; padding: 35px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); max-width: 900px; margin: 0 auto; box-sizing: border-box; }
+                h2 { color: var(--primary); border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-top: 0; font-size: 1.8em; }
+                h3 { color: var(--primary); margin-top: 30px; font-size: 1.3em; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; }
+                .tabla-resumen { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.95em; }
+                .tabla-resumen th, .tabla-resumen td { padding: 14px 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+                .tabla-resumen th { background-color: var(--primary); color: white; font-weight: bold; }
+                .tabla-resumen tbody tr { transition: all 0.15s ease; cursor: pointer; }
+                .tabla-resumen tbody tr:hover { background-color: #f1f5f9; transform: scale(1.002); }
+                #map-informe-vivo { height: 480px; width: 100%; margin-top: 20px; border-radius: 10px; border: 1px solid #cbd5e1; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+                .btn-quarto-print { background-color: var(--info); color: white; border: none; padding: 12px 24px; font-size: 0.95em; font-weight: bold; border-radius: 6px; cursor: pointer; margin-bottom: 25px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: background 0.2s; text-transform: uppercase; }
+                .btn-quarto-print:hover { background-color: #2980b9; }
+                @media print {
+                    .btn-quarto-print { display: none; }
+                    body { background: white; padding: 0; }
+                    .card-reporte { box-shadow: none; padding: 0; max-width: 100%; }
+                    #map-informe-vivo { border: 1px solid #000; page-break-inside: avoid; }
+                }
+            `;
+
+            // Construcción del documento HTML. El array 'historialDatos' viaja serializado adentro.
+            const documentoHtmlCompleto = `<!DOCTYPE html>
+            <html lang="es">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Reporte Técnico Interactivo - ${corredor}</title>
+                <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+                <style>${estilosInformeHtml}</style>
+            </head>
+            <body>
+                <div class="card-reporte">
+                    <button class="btn-quarto-print" onclick="window.print()">📄 Exportar a PDF / Imprimir Reporte</button>
+                    
+                    <h2>Resumen Ejecutivo de Auditoría</h2>
+                    <table class="tabla-resumen">
+                        <tr><th>Parámetro Vial</th><th>Valor Registrado</th></tr>
+                        <tr><td>Corredor Analizado</td><td style="font-weight: bold;">${corredor}</td></tr>
+                        <tr><td>Tramo Operativo</td><td>${desde} hasta ${hasta}</td></tr>
+                        <tr><td>Fecha del Estudio</td><td>${new Date().toLocaleDateString()}</td></tr>
+                        <tr style="border-top: 2px solid var(--primary);"><td>Distancia Total Recorrida</td><td style="font-weight:bold; color:var(--info);">${distancia}</td></tr>
+                        <tr><td>Tiempo Total de Viaje</td><td>${tiempoTotal}</td></tr>
+                        <tr><td>Tiempo Neto en Marcha</td><td style="color:var(--accent); font-weight:bold;">${tiempoMov}</td></tr>
+                        <tr><td>Tiempo de Demora (Frenado)</td><td style="color:var(--danger); font-weight:bold;">${tiempoFrenado}</td></tr>
+                        <tr><td>Velocidad Promedio Global</td><td style="font-weight: bold; color:var(--warning);">${velocidadPromedio}</td></tr>
+                        <tr><td>Eficiencia de Marcha</td><td style="font-weight: bold;">${eficiencia}</td></tr>
+                    </table>
+
+                    <h3>Croquis Cartográfico Dinámico e Interactivo</h3>
+                    <div id="map-informe-vivo"></div>
+
+                    <h3>Historial de Eventos y Observaciones</h3>
+                    <table class="tabla-resumen">
+                        <thead>
+                            <tr><th>Hora</th><th>Evento</th><th>Métrica / Detalle</th></tr>
+                        </thead>
+                        <tbody>
+                            ${filasEventosHtml}
+                        </tbody>
+                    </table>
+                </div>
+
+                <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+                <script>
+                    const trazaGps = ${JSON.stringify(historialDatos)};
+                    
+                    // Re-inicialización del mapa vivo autónomo en el reporte guardado
+                    const map = L.map('map-informe-vivo').setView([-32.95, -60.66], 14);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OSM' }).addTo(map);
+                    
+                    const coordenadas = trazaGps.map(p => [parseFloat(p.Latitud), parseFloat(p.Longitud)]);
+                    
+                    if (coordenadas.length > 0) {
+                        L.polyline(coordenadas, { color: '#3498db', weight: 6, opacity: 0.85 }).addTo(map);
+                        map.fitBounds(L.polyline(coordenadas).getBounds());
+                        
+                        // Generar pines interactivos leyendo los estados de la traza
+                        trazaGps.forEach(p => {
+                            const lat = parseFloat(p.Latitud);
+                            const lng = parseFloat(p.Longitud);
+                            
+                            if (p.Estado === "FIN_PARADA") {
+                                L.circleMarker([lat, lng], { radius: 9, color: '#e74c3c', fillColor: '#e74c3c', fillOpacity: 0.7 })
+                                 .addTo(map).bindPopup("<b>🛑 Demora vial detectada:</b><br>" + p.Detalle);
+                            } else if (p.Estado === "OBSERVACION") {
+                                L.marker([lat, lng]).addTo(map)
+                                 .bindPopup("<b>⚠️ Evento anotado en campo:</b><br>" + p.Detalle);
+                            }
+                        });
+                    }
+                </script>
+            </body>
+            </html>`;
+
+            const base64ContenidoHtml = btoa(unescape(encodeURIComponent(documentoHtmlCompleto)));
+
+            const paqueteEstudio = {
+                corredor: corredor,
+                desde: desde,
+                hasta: hasta,
+                distancia: distancia,
+                tiempoTotal: tiempoTotal,
+                tiempoMov: tiempoMov,
+                tiempoFrenado: tiempoFrenado,
+                velocidadPromedio: velocidadPromedio,
+                eficiencia: eficiencia,
+                historial: historialDatos,
+                htmlBase64: base64ContenidoHtml
+            };
+
+            fetch(APPS_SCRIPT_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "text/plain" },
+                body: JSON.stringify(paqueteEstudio)
+            })
+            .then(() => {
+                alert("¡Estudio guardado! Se han generado la planilla Excel y el reporte dinámico interactivo estilo Quarto en tu Google Drive.");
+                btn.innerText = "✅ ¡Subido con éxito!";
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Error al enviar los datos a Drive.");
                 btn.innerText = "☁️ Intentar de nuevo";
                 btn.disabled = false;
                 btn.style.backgroundColor = "var(--drive)";
-            }
-
-            // Capturar el mapa de forma segura controlando excepciones de CORS o hardware mobile
-            if (typeof html2canvas !== 'undefined') {
-                html2canvas(document.getElementById('map'), { 
-                    useCORS: true, logging: false, allowTaint: true 
-                }).then(function(canvas) {
-                    try {
-                        const mapaImageBase64 = canvas.toDataURL('image/png');
-                        despacharDatosServidor(mapaImageBase64);
-                    } catch(e) {
-                        console.warn("Fallo de CORS al procesar azulejos del mapa. Subiendo informe de texto sin croquis...", e);
-                        despacharDatosServidor(null);
-                    }
-                }).catch(function(err) {
-                    console.warn("Fallo en la librería gráfica. Continuando subida sin mapa...", err);
-                    despacharDatosServidor(null);
-                });
-            } else {
-                console.warn("Librería gráfica ausente. Despachando datos directo...");
-                despacharDatosServidor(null);
-            }
+            });
         }
 
         function exportarExcel() {
@@ -713,7 +760,6 @@
             html2pdf().set(opciones).from(elementoReporte).save();
         }
 
-        /* Exporta a CSV optimizado para QGIS */
         function exportarCSV() {
             if(historialDatos.length === 0) return;
             const headers = "Hora,Latitud,Longitud,Velocidad_Kmh,Dist_Acum_M,Estado,Detalle\n";
