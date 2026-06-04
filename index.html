@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
@@ -308,7 +309,7 @@
     <div id="pantalla-resumen" class="pantalla">
         
         <div id="bloque-reporte-pdf" class="card-reporte">
-            <h2>Resumen Vehiculo Flotante</h2>
+            <h2>Resumen Ejecutivo de Auditoría</h2>
             <table class="tabla-resumen">
                 <tr><th>Parámetro Vial</th><th>Valor Registrado</th></tr>
                 <tr><td>Corredor Analizado</td><td id="rep-corredor" style="font-weight: bold;">-</td></tr>
@@ -325,7 +326,7 @@
             <h3 style="margin-top:25px; margin-bottom:5px; color: var(--primary);">Croquis Espacial y Puntos de Interés</h3>
             <div id="mapa-reporte-contenedor"></div>
 
-            <h3 style="margin-top:25px; color: var(--primary);">Historial de Eventos y Observations</h3>
+            <h3 style="margin-top:25px; color: var(--primary);">Historial de Eventos y Observaciones</h3>
             <table class="tabla-resumen" id="tabla-eventos-detalle">
                 <thead>
                     <tr><th>Hora</th><th>Evento</th><th>Métrica / Detalle</th></tr>
@@ -357,7 +358,7 @@
             </div>
             
             <div class="seccion-obs-libre">
-                <label>✏️ Otro Evento:</label>
+                <label>✏️ Otro Evento (Descripción Libre):</label>
                 <div class="wrapper-input-libre">
                     <input type="text" id="in-obs-manual" placeholder="Ej: Bache profundo, Semáforo roto...">
                     <button class="btn-guardar-libre" onclick="procesarObservacionManual()">Guardar</button>
@@ -562,10 +563,10 @@
             inyectarObservacion(`Nota: ${textoLimpio}`);
         }
 
-        // --- SISTEMA DE EMISIÓN DE REPORTE INTERACTIVO HTML + SHEET ---
+        // --- SISTEMA TOLERANTE A FALLOS PARA SUBIR EXCEL + INFORME HTML ---
         function subirAGoogleDrive() {
-            if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === "TU_URL_DE_APPS_SCRIPT_AQUI") {
-                alert("Falta configurar la variable APPS_SCRIPT_URL con tu enlace de Apps Script.");
+            if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === "TU_URL_DE_APPS_SCRIPT_AQUI" || APPS_SCRIPT_URL.trim() === "") {
+                alert("Por favor configura tu URL real de Google Apps Script en la variable APPS_SCRIPT_URL (línea 172).");
                 return;
             }
 
@@ -574,20 +575,19 @@
             btn.disabled = true;
             btn.style.backgroundColor = "#7f8c8d";
 
-            // 1. Capturar el mapa como una imagen estática usando el canvas expuesto por html2pdf/html2canvas
-            html2canvas(document.getElementById('map'), { useCORS: true }).then(function(canvas) {
-                const mapaImageBase64 = canvas.toDataURL('image/png');
-
-                // 2. Clonar el reporte para manipularlo limpiamente en memoria
+            // Función interna para empaquetar y despachar el JSON pase lo que pase con el mapa
+            function despacharDatosServidor(mapaImageBase64) {
                 let reporteClon = document.getElementById('bloque-reporte-pdf').cloneNode(true);
-                
-                // Sustituir el visor vivo del mapa por la imagen rasterizada estática
                 let contenedorMapaClon = reporteClon.querySelector('#mapa-reporte-contenedor');
+                
                 if (contenedorMapaClon) {
-                    contenedorMapaClon.innerHTML = `<img src="${mapaImageBase64}" style="width:100%; height:auto; border-radius:10px; border:1px solid #bdc3c7;">`;
+                    if (mapaImageBase64) {
+                        contenedorMapaClon.innerHTML = `<img src="${mapaImageBase64}" style="width:100%; height:auto; border-radius:10px; border:1px solid #bdc3c7;">`;
+                    } else {
+                        contenedorMapaClon.innerHTML = `<div style="padding:25px; border:1px solid #bdc3c7; border-radius:10px; text-align:center; color:#7f8c8d; background:#f8f9fa; font-weight:bold;">Croquis Cartográfico no disponible en este reporte</div>`;
+                    }
                 }
 
-                // 3. Definir estilos CSS optimizados para el archivo HTML autónomo resultante
                 const estilosInformeHtml = `
                     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; padding: 30px; background-color: #f4f6f7; color: #333; line-height: 1.5; }
                     .card-reporte { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); max-width: 850px; margin: 0 auto; box-sizing: border-box; }
@@ -596,10 +596,8 @@
                     .tabla-resumen { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.95em; }
                     .tabla-resumen th, .tabla-resumen td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #e0e0e0; }
                     .tabla-resumen th { background-color: #f8f9fa; color: #2c3e50; font-weight: bold; }
-                    tr:hover { background-color: #f9f9f9; }
                 `;
 
-                // 4. Armar el documento estructurado completo
                 const documentoHtmlCompleto = `<!DOCTYPE html>
                 <html lang="es">
                 <head>
@@ -609,16 +607,18 @@
                     <style>${estilosInformeHtml}</style>
                 </head>
                 <body>
-                    <div class="card-reporte">
-                        ${reporteClon.innerHTML}
-                    </div>
+                    <div class="card-reporte">${reporteClon.innerHTML}</div>
                 </body>
                 </html>`;
 
-                // Comprimir a cadena binaria Base64 compatible con UTF-8
-                const base64ContenidoHtml = btoa(unescape(encodeURIComponent(documentoHtmlCompleto)));
+                let base64ContenidoHtml = "";
+                try {
+                    base64ContenidoHtml = btoa(unescape(encodeURIComponent(documentoHtmlCompleto)));
+                } catch (err) {
+                    alert("Error crítico al codificar el texto del informe.");
+                    restaurarBotonError(); return;
+                }
 
-                // 5. Estructurar el paquete JSON de envío
                 const paqueteEstudio = {
                     corredor: document.getElementById('in-lugar').value,
                     desde: document.getElementById('in-desde').value || 'Punto Inicial',
@@ -630,7 +630,7 @@
                     velocidadPromedio: document.getElementById('rep-vel-promedio').innerText,
                     eficiencia: document.getElementById('rep-eficiencia').innerText,
                     historial: historialDatos,
-                    htmlBase64: base64ContenidoHtml // Nueva propiedad HTML inyectada
+                    htmlBase64: base64ContenidoHtml
                 };
 
                 fetch(APPS_SCRIPT_URL, {
@@ -645,12 +645,37 @@
                 })
                 .catch(err => {
                     console.error(err);
-                    alert("Error de conexión al enviar el estudio a Drive.");
-                    btn.innerText = "☁️ Intentar de nuevo";
-                    btn.disabled = false;
-                    btn.style.backgroundColor = "var(--drive)";
+                    alert("Error de conexión con los servidores de Google. Revisa tu señal.");
+                    restaurarBotonError();
                 });
-            });
+            }
+
+            function restaurarBotonError() {
+                btn.innerText = "☁️ Intentar de nuevo";
+                btn.disabled = false;
+                btn.style.backgroundColor = "var(--drive)";
+            }
+
+            // Capturar el mapa de forma segura controlando excepciones de CORS o hardware mobile
+            if (typeof html2canvas !== 'undefined') {
+                html2canvas(document.getElementById('map'), { 
+                    useCORS: true, logging: false, allowTaint: true 
+                }).then(function(canvas) {
+                    try {
+                        const mapaImageBase64 = canvas.toDataURL('image/png');
+                        despacharDatosServidor(mapaImageBase64);
+                    } catch(e) {
+                        console.warn("Fallo de CORS al procesar azulejos del mapa. Subiendo informe de texto sin croquis...", e);
+                        despacharDatosServidor(null);
+                    }
+                }).catch(function(err) {
+                    console.warn("Fallo en la librería gráfica. Continuando subida sin mapa...", err);
+                    despacharDatosServidor(null);
+                });
+            } else {
+                console.warn("Librería gráfica ausente. Despachando datos directo...");
+                despacharDatosServidor(null);
+            }
         }
 
         function exportarExcel() {
@@ -688,10 +713,13 @@
             html2pdf().set(opciones).from(elementoReporte).save();
         }
 
+        /* Exporta a CSV optimizado para QGIS */
         function exportarCSV() {
             if(historialDatos.length === 0) return;
-            const headers = Object.keys(historialDatos[0]).join(",") + "\n";
-            const lineas = historialDatos.map(row => Object.values(row).map(val => `"${val}"`).join(",")).join("\n");
+            const headers = "Hora,Latitud,Longitud,Velocidad_Kmh,Dist_Acum_M,Estado,Detalle\n";
+            const lineas = historialDatos.map(p => 
+                `"${p.Hora}","${p.Latitud}","${p.Longitud}","${p.Velocidad_Kmh}","${p.Dist_Acum_M}","${p.Estado}","${p.Detalle}"`
+            ).join("\n");
             
             const blob = new Blob([headers + lineas], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
