@@ -12,189 +12,49 @@
 
     <style>
         :root {
-            --primary: #2c3e50;
-            --accent: #2ecc71;
-            --danger: #e74c3c;
-            --warning: #f39c12;
-            --info: #3498db;
-            --drive: #1ea362;
-            --bg-light: #f8f9fa;
+            --primary: #2c3e50; --accent: #2ecc71; --danger: #e74c3c;
+            --warning: #f39c12; --info: #3498db; --drive: #1ea362; --bg-light: #f8f9fa;
         }
-
-        html, body {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-        }
-
+        html, body { height: 100%; margin: 0; padding: 0; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-            background-color: var(--bg-light);
-            height: 100vh;
-            height: 100dvh; /* Adapta el alto real dinámico en celulares */
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+            background-color: var(--bg-light); height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden;
         }
+        .pantalla { display: none; flex-direction: column; width: 100%; height: 100%; box-sizing: border-box; }
+        .pantalla.activa { display: flex; }
 
-        /* Sistema de Pantallas (SPA) */
-        .pantalla {
-            display: none;
-            flex-direction: column;
-            width: 100%;
-            height: 100%;
-            box-sizing: border-box;
-        }
-        .pantalla.activa {
-            display: flex;
-        }
-
-        /* PANTALLA 1: CONFIGURACIÓN */
-        #pantalla-config {
-            padding: 25px;
-            justify-content: center;
-            background: linear-gradient(135deg, #2c3e50, #34495e);
-            color: white;
-            overflow-y: auto;
-        }
-        .header-config {
-            text-align: center;
-            margin-bottom: 30px;
-        }
+        /* PANTALLAS */
+        #pantalla-config { padding: 25px; justify-content: center; background: linear-gradient(135deg, #2c3e50, #34495e); color: white; overflow-y: auto; }
+        .header-config { text-align: center; margin-bottom: 30px; }
         .header-config h1 { margin: 0; font-size: 1.8em; color: var(--accent); }
         .header-config p { margin: 5px 0 0 0; opacity: 0.8; font-size: 0.9em; }
-        .form-group {
-            margin-bottom: 20px;
-            display: flex;
-            flex-direction: column;
-        }
-        .form-group label {
-            font-size: 0.85em;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 8px;
-            font-weight: bold;
-        }
-        .form-group input {
-            padding: 15px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1em;
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-        .form-group input:focus {
-            outline: 2px solid var(--accent);
-            background: rgba(255, 255, 255, 0.2);
-        }
+        .form-group { margin-bottom: 20px; display: flex; flex-direction: column; }
+        .form-group label { font-size: 0.85em; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: bold; }
+        .form-group input { padding: 15px; border: none; border-radius: 8px; font-size: 1em; background: rgba(255, 255, 255, 0.1); color: white; border: 1px solid rgba(255,255,255,0.2); }
+        .form-group input:focus { outline: 2px solid var(--accent); background: rgba(255, 255, 255, 0.2); }
 
-        /* PANTALLA 2: APLICACIÓN / CAPTURA */
-        #panel-metricas {
-            background: var(--primary);
-            color: white;
-            padding: 8px;
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 6px;
-            z-index: 1000;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        }
-        .metrica {
-            background: rgba(255,255,255,0.1);
-            padding: 6px 3px;
-            border-radius: 6px;
-            text-align: center;
-            font-size: 0.75em;
-        }
-        .metrica span {
-            display: block;
-            font-size: 1.15em;
-            font-weight: bold;
-            color: var(--accent);
-            margin-top: 2px;
-        }
+        #panel-metricas { background: var(--primary); color: white; padding: 8px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+        .metrica { background: rgba(255,255,255,0.1); padding: 6px 3px; border-radius: 6px; text-align: center; font-size: 0.75em; }
+        .metrica span { display: block; font-size: 1.15em; font-weight: bold; color: var(--accent); margin-top: 2px; }
         .metrica.destacada span { color: #f1c40f; }
 
-        #map-wrapper {
-            flex-grow: 1;
-            width: 100%;
-            min-height: 0;
-            display: flex;
-            flex-direction: column;
-        }
+        #map-wrapper { flex-grow: 1; width: 100%; min-height: 0; display: flex; flex-direction: column; }
+        #map { width: 100%; height: 100%; z-index: 1; }
 
-        #map {
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-        }
-
-        /* PANTALLA 3: RESUMEN / EXPORTACIÓN */
-        #pantalla-resumen {
-            padding: 15px;
-            overflow-y: auto;
-            background: #f4f6f7;
-        }
-        .card-reporte {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            margin-bottom: 15px;
-        }
+        #pantalla-resumen { padding: 15px; overflow-y: auto; background: #f4f6f7; }
+        .card-reporte { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 15px; }
         .card-reporte h2 { margin-top: 0; color: var(--primary); border-bottom: 2px solid #eee; padding-bottom: 10px; }
         
-        .tabla-resumen {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-            font-size: 0.9em;
-        }
-        .tabla-resumen th, .tabla-resumen td {
-            padding: 12px 10px;
-            text-align: left;
-            border-bottom: 1px solid #e0e0e0;
-        }
+        .tabla-resumen { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9em; }
+        .tabla-resumen th, .tabla-resumen td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #e0e0e0; }
         .tabla-resumen th { background-color: #f8f9fa; color: var(--primary); font-weight: bold; }
+        .resalte-verde { color: #27ae60; font-weight: bold; }
+        #mapa-reporte-contenedor { height: 350px; width: 100%; margin-top: 15px; border-radius: 10px; border: 1px solid #bdc3c7; overflow: hidden; box-shadow: inset 0 2px 5px rgba(0,0,0,0.05); }
 
-        #mapa-reporte-contenedor {
-            height: 350px;
-            width: 100%;
-            margin-top: 15px;
-            border-radius: 10px;
-            border: 1px solid #bdc3c7;
-            overflow: hidden;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
-        }
-
-        /* Botoneras y Modales */
-        .botonera-fija {
-            display: flex;
-            padding: 10px 12px;
-            background: white;
-            gap: 10px;
-            z-index: 1000;
-            box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
-            box-sizing: border-box;
-        }
-        .grid-botones-export {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        button {
-            padding: 14px;
-            font-size: 0.95em;
-            font-weight: bold;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            transition: background 0.2s;
-        }
+        /* Botones y Modales */
+        .botonera-fija { display: flex; padding: 10px 12px; background: white; gap: 10px; z-index: 1000; box-shadow: 0 -4px 10px rgba(0,0,0,0.1); box-sizing: border-box; }
+        .grid-botones-export { display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 15px; }
+        button { padding: 14px; font-size: 0.95em; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; transition: background 0.2s; }
         .btn-accion { background: var(--accent); color: white; width: 100%; }
         .btn-alerta { background: var(--danger); color: white; }
         .btn-warning { background: var(--warning); color: white; }
@@ -202,85 +62,20 @@
         .btn-drive { background: var(--drive); color: white; }
         .btn-outline { background: #7f8c8d; color: white; }
 
-        /* Modal de Observaciones */
-        #modal-obs {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7);
-            z-index: 2000;
-            display: none;
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-content {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 400px;
-            box-sizing: border-box;
-            max-height: 90vh; /* Permite scroll si hay muchos botones */
-            overflow-y: auto;
-        }
-        .grid-obs {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin: 15px 0 5px 0;
-        }
+        #modal-obs { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; display: none; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 20px; border-radius: 12px; width: 90%; max-width: 400px; box-sizing: border-box; max-height: 90vh; overflow-y: auto; }
+        .grid-obs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0 5px 0; }
         .btn-obs-opcion { background: #ecf0f1; color: var(--primary); font-size: 0.8em; text-transform: none; padding: 12px 5px; }
 
-        .seccion-obs-libre {
-            border-top: 1px solid #e0e0e0;
-            margin-top: 15px;
-            padding-top: 12px;
-        }
-        .seccion-obs-libre label {
-            font-size: 0.85em;
-            font-weight: bold;
-            color: var(--primary);
-            display: block;
-            margin-bottom: 6px;
-        }
-        .wrapper-input-libre {
-            display: flex;
-            gap: 6px;
-        }
-        .wrapper-input-libre input {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 0.9em;
-        }
-        .wrapper-input-libre input:focus {
-            outline: 2px solid var(--warning);
-        }
-        .btn-guardar-libre {
-            background: var(--warning);
-            color: white;
-            padding: 10px 14px;
-            font-size: 0.85em;
-            text-transform: uppercase;
-        }
+        .seccion-obs-libre { border-top: 1px solid #e0e0e0; margin-top: 15px; padding-top: 12px; }
+        .seccion-obs-libre label { font-size: 0.85em; font-weight: bold; color: var(--primary); display: block; margin-bottom: 6px; }
+        .wrapper-input-libre { display: flex; gap: 6px; }
+        .wrapper-input-libre input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 0.9em; }
+        .btn-guardar-libre { background: var(--warning); color: white; padding: 10px 14px; font-size: 0.85em; text-transform: uppercase; }
 
         /* Estilo para los pines con Emojis en Leaflet */
-        .custom-div-icon {
-            background: transparent;
-            border: none;
-        }
-        .pin-obs {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            color: white;
-            font-size: 14px;
-            font-weight: bold;
-            border: 2px solid white;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.4);
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-        }
+        .custom-div-icon { background: transparent; border: none; }
+        .pin-obs { display: flex; align-items: center; justify-content: center; border-radius: 50%; color: white; font-size: 14px; font-weight: bold; border: 2px solid white; box-shadow: 0 3px 6px rgba(0,0,0,0.4); text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
@@ -290,18 +85,9 @@
             <h1>Vehículo Flotante</h1>
             <p>Ingeniería de Tránsito & Movilidad Urbana</p>
         </div>
-        <div class="form-group">
-            <label>Corredor / Vialidad:</label>
-            <input type="text" id="in-lugar" placeholder="Ej: Av. Pellegrini">
-        </div>
-        <div class="form-group">
-            <label>Intersección Origen (Desde):</label>
-            <input type="text" id="in-desde" placeholder="Ej: Bv. Oroño">
-        </div>
-        <div class="form-group">
-            <label>Intersección Destino (Hasta):</label>
-            <input type="text" id="in-hasta" placeholder="Ej: Av. Belgrano">
-        </div>
+        <div class="form-group"><label>Corredor / Vialidad:</label><input type="text" id="in-lugar" placeholder="Ej: Av. Pellegrini"></div>
+        <div class="form-group"><label>Intersección Origen (Desde):</label><input type="text" id="in-desde" placeholder="Ej: Bv. Oroño"></div>
+        <div class="form-group"><label>Intersección Destino (Hasta):</label><input type="text" id="in-hasta" placeholder="Ej: Av. Belgrano"></div>
         <button class="btn-accion" style="margin-top: 20px;" onclick="irAPantallaApp()">Comenzar Recorrido</button>
     </div>
 
@@ -315,9 +101,7 @@
             <div class="metrica">Vel. Máx<span id="txt-vel-max" style="color: #e74c3c;">0 km/h</span></div>
         </div>
 
-        <div id="map-wrapper">
-            <div id="map"></div>
-        </div>
+        <div id="map-wrapper"><div id="map"></div></div>
 
         <div class="botonera-fija">
             <button class="btn-warning" style="flex: 2;" onclick="abrirModalObs()">Observación</button>
@@ -326,20 +110,22 @@
     </div>
 
     <div id="pantalla-resumen" class="pantalla">
-        
         <div id="bloque-reporte-pdf" class="card-reporte">
-            <h2>Resumen Vehiculo Flotante</h2>
+            <h2>Resumen Vehículo Flotante</h2>
             <table class="tabla-resumen">
                 <tr><th>Parámetro Vial</th><th>Valor Registrado</th></tr>
                 <tr><td>Corredor Analizado</td><td id="rep-corredor" style="font-weight: bold;">-</td></tr>
                 <tr><td>Tramo Operativo</td><td><span id="rep-desde">-</span> hasta <span id="rep-hasta">-</span></td></tr>
-                <tr><td>Fecha del Estudio</td><td id="rep-fecha">-</td></tr>
+                <tr><td>Fecha y Hora del Estudio</td><td id="rep-fecha">-</td></tr>
                 <tr style="border-top: 2px solid var(--primary);"><td>Distancia Total Recorrida</td><td id="rep-distancia" style="font-weight:bold; color:var(--info);">-</td></tr>
                 <tr><td>Tiempo Total de Viaje</td><td id="rep-t-total">-</td></tr>
                 <tr><td>Tiempo Neto en Marcha</td><td id="rep-t-mov" style="color:var(--accent);">-</td></tr>
                 <tr><td>Tiempo de Demora (Frenado)</td><td id="rep-t-frenado" style="color:var(--danger);">-</td></tr>
                 
-                <tr><td>Velocidad Viaje (Prom. Global)</td><td id="rep-vel-promedio" style="font-weight: bold;">-</td></tr>
+                <tr><td>Cantidad de Paradas</td><td id="rep-paradas" style="font-weight: bold;">0</td></tr>
+                <tr><td>Cantidad de Observaciones</td><td id="rep-observaciones" style="font-weight: bold;">0</td></tr>
+                
+                <tr style="border-top: 2px solid var(--primary);"><td>Velocidad Viaje (Prom. Global)</td><td id="rep-vel-promedio" style="font-weight: bold;">-</td></tr>
                 <tr><td>Velocidad Media de Marcha</td><td id="rep-vel-marcha" style="font-weight: bold; color: #27ae60;">-</td></tr>
                 <tr><td>Velocidad Máxima Alcanzada</td><td id="rep-vel-maxima" style="font-weight: bold; color: var(--danger);">-</td></tr>
                 <tr><td>Eficiencia de Marcha</td><td id="rep-eficiencia" style="font-weight: bold;">-</td></tr>
@@ -350,18 +136,15 @@
 
             <h3 style="margin-top:25px; color: var(--primary);">Historial de Eventos y Observaciones</h3>
             <table class="tabla-resumen" id="tabla-eventos-detalle">
-                <thead>
-                    <tr><th>Hora</th><th>Evento</th><th>Métrica / Detalle</th></tr>
-                </thead>
-                <tbody>
-                </tbody>
+                <thead><tr><th>Hora</th><th>Evento</th><th>Métrica / Detalle</th></tr></thead>
+                <tbody></tbody>
             </table>
         </div>
 
         <div class="grid-botones-export">
             <button class="btn-drive" id="btn-subir-drive" onclick="subirAGoogleDrive()">☁️ Guardar en Google Drive</button>
             <button class="btn-warning" onclick="exportarExcel()">Exportar a MS Excel (.xlsx)</button>
-            <button class="btn-info" onclick="exportarPDF()">Exportar Reporte PDF (.pdf)</button>
+            <button class="btn-info" onclick="exportarPDF()">Exportar Reporte Local (.pdf)</button>
             <button class="btn-accion" onclick="exportarCSV()">Descargar Datos Crudos (.csv)</button>
             <button class="btn-outline" style="margin-top:15px;" onclick="reiniciarApp()">Iniciar Nuevo Recorrido</button>
         </div>
@@ -389,7 +172,6 @@
                     <button class="btn-guardar-libre" onclick="procesarObservacionManual()">Guardar</button>
                 </div>
             </div>
-
             <button class="btn-outline" style="width:100%; padding:10px; margin-top: 15px;" onclick="cerrarModalObs()">Cancelar</button>
         </div>
     </div>
@@ -410,25 +192,23 @@
         let segTotales = 0, segMovimiento = 0, segFrenadoTotal = 0, segDesdeUltimaParada = 0, distanciaTotalMetros = 0;
         let ultimoPunto = null, estaDetenido = false, inicioParadaTime = null, marcadorParadaActual = null;
 
-        // Variables Globales Nuevas para Velocidad Máxima
+        // Nuevos Contadores y Variables
         let maximaVelocidadKmh = 0;
         let coordsVelocidadMaxima = null;
+        let contadorParadas = 0;
+        let contadorObservaciones = 0;
+        let fechaHoraEstudio = "";
 
         const UMBRAL_VELOCIDAD_PARADA = 4.0;
 
         window.onload = () => {
             map = L.map('map', { preferCanvas: true }).setView([-32.95, -60.66], 14);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { 
-                attribution: '© OSM', crossOrigin: true 
-            }).addTo(map);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OSM', crossOrigin: true }).addTo(map);
             rutaInstancia = L.polyline([], {color: '#3498db', weight: 6}).addTo(map);
         };
 
-        // Generador de Iconos Cartográficos Personalizados
         function obtenerIconoVisual(tipoString) {
-            let emoji = '📌'; 
-            let colorHex = '#3498db'; 
-            let size = 30;
+            let emoji = '📌'; let colorHex = '#3498db'; let size = 30;
             
             if (tipoString.includes('Doble Fila')) { emoji = '🚗'; colorHex = '#e67e22'; }
             else if (tipoString.includes('Camiones')) { emoji = '🚛'; colorHex = '#8e44ad'; }
@@ -450,14 +230,16 @@
         }
 
         function irAPantallaApp() {
-            if(!document.getElementById('in-lugar').value.trim()) {
-                alert("Debe especificar la vialidad o corredor bajo estudio."); return;
-            }
+            if(!document.getElementById('in-lugar').value.trim()) { alert("Debe especificar la vialidad o corredor bajo estudio."); return; }
             
             historialDatos = []; registroEventosEspeciales = [];
-            segTotales = segMovimiento = segFrenadoTotal = segDesdeUltimaParada = distanciaTotalMetros = 0;
+            segTotales = 0; segMovimiento = 0; segFrenadoTotal = 0; segDesdeUltimaParada = 0; distanciaTotalMetros = 0;
             maximaVelocidadKmh = 0; coordsVelocidadMaxima = null;
+            contadorParadas = 0; contadorObservaciones = 0;
             ultimoPunto = null; estaDetenido = false;
+            
+            // Guardamos la fecha y hora exacta del inicio
+            fechaHoraEstudio = new Date().toLocaleString('es-AR');
 
             cambiarPantalla('pantalla-app');
             setTimeout(() => map.invalidateSize(), 200);
@@ -477,9 +259,7 @@
         }
 
         function procesarTelemetriaGPS(position) {
-            const lat = position.coords.latitude;
-            const lng = position.coords.longitude;
-            const timestamp = position.timestamp;
+            const lat = position.coords.latitude; const lng = position.coords.longitude; const timestamp = position.timestamp;
             let velocidadKmh = 0;
             
             if (ultimoPunto) {
@@ -488,11 +268,8 @@
                 
                 if (deltaTiempoSeg > 0) {
                     velocidadKmh = (distM / deltaTiempoSeg) * 3.6;
-                    
                     if (velocidadKmh < 140) { 
                         distanciaTotalMetros += distM; 
-                        
-                        // LÓGICA: Registro de Velocidad Máxima
                         if (velocidadKmh > maximaVelocidadKmh) {
                             maximaVelocidadKmh = velocidadKmh;
                             coordsVelocidadMaxima = { lat, lng };
@@ -515,46 +292,35 @@
                 if (estaDetenido) {
                     estaDetenido = false;
                     const duracionParadaSeg = Math.floor((Date.now() - inicioParadaTime) / 1000);
-                    
                     registrarLogGeneral(lat, lng, velocidadKmh, "FIN_PARADA", `Frenado: ${duracionParadaSeg}s`);
                     
                     if (duracionParadaSeg > 1) {
+                        contadorParadas++; // Incrementamos el contador de paradas
                         registroEventosEspeciales.push({
-                            hora: new Date().toLocaleTimeString(),
-                            evento: "🛑 Parada / Demora",
-                            detalle: `Vehículo detenido durante ${duracionParadaSeg} segundos.`
+                            hora: new Date().toLocaleTimeString(), evento: "🛑 Parada / Demora", detalle: `Vehículo detenido durante ${duracionParadaSeg} segundos.`
                         });
                         if (marcadorParadaActual) marcadorParadaActual.bindPopup(`Demora: ${duracionParadaSeg}s`).openPopup();
                     } else {
                         if (marcadorParadaActual) map.removeLayer(marcadorParadaActual);
                     }
-                    segDesdeUltimaParada = 0;
-                    marcadorParadaActual = null;
+                    segDesdeUltimaParada = 0; marcadorParadaActual = null;
                 }
             }
 
             registrarLogGeneral(lat, lng, velocidadKmh, estaDetenido ? "FRENADO" : "MARCHA", "");
             
-            const coord = [lat, lng];
-            rutaInstancia.addLatLng(coord);
-            map.setView(coord, 17);
-
+            const coord = [lat, lng]; rutaInstancia.addLatLng(coord); map.setView(coord, 17);
             ultimoPunto = { lat, lng, timestamp };
         }
 
         function registrarLogGeneral(lat, lng, vel, evento, det) {
-            historialDatos.push({
-                Hora: new Date().toISOString(), Latitud: lat.toFixed(6), Longitud: lng.toFixed(6),
-                Velocidad_Kmh: vel.toFixed(2), Dist_Acum_M: distanciaTotalMetros.toFixed(1),
-                Estado: evento, Detalle: det
-            });
+            historialDatos.push({ Hora: new Date().toISOString(), Latitud: lat.toFixed(6), Longitud: lng.toFixed(6), Velocidad_Kmh: vel.toFixed(2), Dist_Acum_M: distanciaTotalMetros.toFixed(1), Estado: evento, Detalle: det });
         }
 
         function finalizarRecorrido() {
             if (watchId) navigator.geolocation.clearWatch(watchId);
             if (cronometroId) clearInterval(cronometroId);
             
-            // Poner pin del rayito en el mapa de Vel. Máxima
             if (coordsVelocidadMaxima && maximaVelocidadKmh > 10) {
                 L.marker([coordsVelocidadMaxima.lat, coordsVelocidadMaxima.lng], { icon: obtenerIconoVisual('MAX_SPEED'), zIndexOffset: 1000 })
                  .addTo(map).bindPopup(`<b>⚡ Velocidad Máxima Alcanzada:</b><br>${maximaVelocidadKmh.toFixed(1)} km/h`);
@@ -563,15 +329,14 @@
             const objetoMapa = document.getElementById('map');
             document.getElementById('mapa-reporte-contenedor').appendChild(objetoMapa);
 
-            setTimeout(() => {
-                map.invalidateSize();
-                if(ultimoPunto) map.setView([ultimoPunto.lat, ultimoPunto.lng], 15);
-            }, 150);
+            setTimeout(() => { map.invalidateSize(); if(ultimoPunto) map.setView([ultimoPunto.lat, ultimoPunto.lng], 15); }, 150);
             
             document.getElementById('rep-corredor').innerText = document.getElementById('in-lugar').value;
             document.getElementById('rep-desde').innerText = document.getElementById('in-desde').value || 'Punto Inicial';
             document.getElementById('rep-hasta').innerText = document.getElementById('in-hasta').value || 'Punto Final';
-            document.getElementById('rep-fecha').innerText = new Date().toLocaleDateString();
+            document.getElementById('rep-fecha').innerText = fechaHoraEstudio;
+            document.getElementById('rep-paradas').innerText = contadorParadas;
+            document.getElementById('rep-observaciones').innerText = contadorObservaciones;
             
             const distFinalText = distanciaTotalMetros > 1000 ? (distanciaTotalMetros/1000).toFixed(2) + " km" : Math.floor(distanciaTotalMetros) + " m";
             document.getElementById('rep-distancia').innerText = distFinalText;
@@ -579,7 +344,6 @@
             document.getElementById('rep-t-mov').innerText = formatearMinutosSegundos(segMovimiento);
             document.getElementById('rep-t-frenado').innerText = formatearMinutosSegundos(segFrenadoTotal);
             
-            // CÁLCULO DE VELOCIDADES
             const velPromedioGlobalText = segTotales > 0 ? ((distanciaTotalMetros / segTotales) * 3.6).toFixed(1) + " km/h" : "0.0 km/h";
             document.getElementById('rep-vel-promedio').innerText = velPromedioGlobalText;
 
@@ -594,38 +358,26 @@
             const tbody = document.querySelector('#tabla-eventos-detalle tbody');
             tbody.innerHTML = "";
             if(registroEventosEspeciales.length === 0) {
-                tbody.innerHTML = "<tr><td colspan='3' style='text-align:center; color:#95a5a6;'>No se registraron demoras ni observaciones en este viaje.</td></tr>";
+                tbody.innerHTML = "<tr><td colspan='3' style='text-align:center; color:#95a5a6;'>No se registraron demoras ni observaciones.</td></tr>";
             } else {
-                registroEventosEspeciales.forEach(ev => {
-                    tbody.innerHTML += `<tr><td>${ev.hora}</td><td>${ev.evento}</td><td>${ev.detalle}</td></tr>`;
-                });
+                registroEventosEspeciales.forEach(ev => { tbody.innerHTML += `<tr><td>${ev.hora}</td><td>${ev.evento}</td><td>${ev.detalle}</td></tr>`; });
             }
 
             const btnDrive = document.getElementById('btn-subir-drive');
-            btnDrive.innerText = "☁️ Guardar en Google Drive";
-            btnDrive.disabled = false;
-            btnDrive.style.backgroundColor = "var(--drive)";
+            btnDrive.innerText = "☁️ Guardar en Google Drive"; btnDrive.disabled = false; btnDrive.style.backgroundColor = "var(--drive)";
 
             cambiarPantalla('pantalla-resumen');
         }
 
         function abrirModalObs() { document.getElementById('modal-obs').style.display = 'flex'; }
-        function cerrarModalObs() { 
-            document.getElementById('modal-obs').style.display = 'none'; 
-            document.getElementById('in-obs-manual').value = ""; 
-        }
+        function cerrarModalObs() { document.getElementById('modal-obs').style.display = 'none'; document.getElementById('in-obs-manual').value = ""; }
         
         function inyectarObservacion(tipoObs) {
-            const lat = ultimoPunto ? ultimoPunto.lat : 0;
-            const lng = ultimoPunto ? ultimoPunto.lng : 0;
-            
+            const lat = ultimoPunto ? ultimoPunto.lat : 0; const lng = ultimoPunto ? ultimoPunto.lng : 0;
             registrarLogGeneral(lat, lng, 0, "OBSERVACION", tipoObs);
             
-            registroEventosEspeciales.push({
-                hora: new Date().toLocaleTimeString(),
-                evento: "⚠️ Observación",
-                detalle: tipoObs
-            });
+            contadorObservaciones++; // Incrementamos el contador
+            registroEventosEspeciales.push({ hora: new Date().toLocaleTimeString(), evento: "⚠️ Observación", detalle: tipoObs });
 
             if(ultimoPunto) {
                 L.marker([lat, lng], { icon: obtenerIconoVisual(tipoObs) }).addTo(map).bindPopup(`<b>Observado:</b> ${tipoObs}`).openPopup();
@@ -634,16 +386,15 @@
         }
 
         function procesarObservacionManual() {
-            const inputLibre = document.getElementById('in-obs-manual');
-            const textoLimpio = inputLibre.value.trim();
-            if(!textoLimpio) { alert("Por favor escriba una descripción antes de guardar."); return; }
-            inyectarObservacion(`Nota: ${textoLimpio}`);
+            const txt = document.getElementById('in-obs-manual').value.trim();
+            if(!txt) { alert("Escriba una descripción."); return; }
+            inyectarObservacion(`Nota: ${txt}`);
         }
 
+        // FUNCIÓN ACTUALIZADA: Genera y sube el HTML dinámico puro sin usar html2canvas
         function subirAGoogleDrive() {
-            if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === "TU_URL_DE_APPS_SCRIPT_AQUI" || APPS_SCRIPT_URL.trim() === "") {
-                alert("Por favor configura tu URL de Apps Script (línea 184).");
-                return;
+            if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === "TU_URL_DE_APPS_SCRIPT_AQUI" || APPS_SCRIPT_URL.trim() === "") { 
+                alert("Por favor configura tu URL de Apps Script (línea 184)."); return; 
             }
 
             const btn = document.getElementById('btn-subir-drive');
@@ -651,74 +402,132 @@
             btn.disabled = true;
             btn.style.backgroundColor = "#7f8c8d";
 
-            html2canvas(document.getElementById('map'), { useCORS: true }).then(function(canvas) {
-                const mapaImageBase64 = canvas.toDataURL('image/png');
+            const payloadData = {
+                corredor: document.getElementById('in-lugar').value,
+                desde: document.getElementById('in-desde').value || 'Punto Inicial',
+                hasta: document.getElementById('in-hasta').value || 'Punto Final',
+                fechaHora: fechaHoraEstudio,
+                distancia: document.getElementById('rep-distancia').innerText,
+                tiempoTotal: document.getElementById('rep-t-total').innerText,
+                tiempoMov: document.getElementById('rep-t-mov').innerText,
+                tiempoFrenado: document.getElementById('rep-t-frenado').innerText,
+                paradas: contadorParadas,
+                observaciones: contadorObservaciones,
+                velocidadPromedio: document.getElementById('rep-vel-promedio').innerText,
+                velocidadMarcha: document.getElementById('rep-vel-marcha').innerText,
+                velocidadMax: document.getElementById('rep-vel-maxima').innerText,
+                eficiencia: document.getElementById('rep-eficiencia').innerText
+            };
 
-                let reporteClon = document.getElementById('bloque-reporte-pdf').cloneNode(true);
-                let contenedorMapaClon = reporteClon.querySelector('#mapa-reporte-contenedor');
-                if (contenedorMapaClon) {
-                    contenedorMapaClon.innerHTML = `<img src="${mapaImageBase64}" style="width:100%; height:auto; border-radius:10px; border:1px solid #bdc3c7;">`;
-                }
+            let filasEv = registroEventosEspeciales.length === 0 ? "<tr><td colspan='3' style='text-align:center;'>Sin eventos.</td></tr>" 
+                        : registroEventosEspeciales.map(e => `<tr><td>${e.hora}</td><td>${e.evento}</td><td>${e.detalle}</td></tr>`).join("");
 
-                const estilosPdfHTML = `
-                    body { font-family: -apple-system, sans-serif; padding: 30px; background-color: #f4f6f7; color: #333; line-height: 1.5; }
-                    .card-reporte { background: white; padding: 30px; border-radius: 12px; max-width: 850px; margin: 0 auto; box-sizing: border-box; }
-                    h2 { color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 0; font-size: 1.6em; }
-                    h3 { color: #2c3e50; margin-top: 25px; font-size: 1.25em; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+            const jsGeneradorIconos = obtenerIconoVisual.toString();
+
+            // Construcción del documento HTML con la etiqueta script escapada
+            const documentoHtmlCompleto = `<!DOCTYPE html>
+            <html lang="es">
+            <head>
+                <meta charset="UTF-8">
+                <title>Reporte - ${payloadData.corredor}</title>
+                <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+                <style>
+                    :root { --primary: #2c3e50; --accent: #2ecc71; --danger: #e74c3c; --warning: #f39c12; --info: #3498db; }
+                    body { font-family: -apple-system, sans-serif; padding: 30px; background: #f4f6f7; margin: 0; }
+                    .card-reporte { background: white; padding: 35px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); max-width: 900px; margin: 0 auto; }
+                    h2 { color: var(--primary); border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-top: 0; }
+                    h3 { color: var(--primary); margin-top: 30px; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; }
                     .tabla-resumen { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.95em; }
-                    .tabla-resumen th, .tabla-resumen td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #e0e0e0; }
-                    .tabla-resumen th { background-color: #f8f9fa; color: #2c3e50; font-weight: bold; }
-                `;
+                    .tabla-resumen th, .tabla-resumen td { padding: 14px 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+                    .tabla-resumen th { background-color: var(--primary); color: white; }
+                    .tabla-resumen tbody tr:hover { background-color: #f1f5f9; }
+                    #map-informe-vivo { height: 480px; width: 100%; margin-top: 20px; border-radius: 10px; border: 1px solid #cbd5e1; }
+                    .custom-div-icon { background: transparent; border: none; }
+                    .pin-obs { display: flex; align-items: center; justify-content: center; border-radius: 50%; color: white; font-size: 14px; border: 2px solid white; box-shadow: 0 3px 6px rgba(0,0,0,0.4); }
+                    .btn-quarto-print { background: var(--info); color: white; border: none; padding: 12px 24px; font-size: 0.95em; font-weight: bold; border-radius: 6px; cursor: pointer; margin-bottom: 25px; transition: background 0.2s; }
+                    .btn-quarto-print:hover { background: #2980b9; }
+                    @media print { .btn-quarto-print { display: none; } body { background: white; padding: 0; } .card-reporte { box-shadow: none; padding: 0; } }
+                </style>
+            </head>
+            <body>
+                <div class="card-reporte">
+                    <button class="btn-quarto-print" onclick="window.print()">📄 Exportar a PDF</button>
+                    <h2>Resumen de Auditoría</h2>
+                    <table class="tabla-resumen">
+                        <tr><th>Parámetro Vial</th><th>Valor Registrado</th></tr>
+                        <tr><td>Corredor Analizado</td><td style="font-weight: bold;">${payloadData.corredor}</td></tr>
+                        <tr><td>Tramo Operativo</td><td>${payloadData.desde} hasta ${payloadData.hasta}</td></tr>
+                        <tr><td>Fecha y Hora del Estudio</td><td>${payloadData.fechaHora}</td></tr>
+                        <tr style="border-top: 2px solid var(--primary);"><td>Distancia Total</td><td style="font-weight:bold; color:var(--info);">${payloadData.distancia}</td></tr>
+                        <tr><td>Tiempo Total Viaje</td><td>${payloadData.tiempoTotal}</td></tr>
+                        <tr><td>Tiempo Marcha (Neto)</td><td style="color:var(--accent); font-weight:bold;">${payloadData.tiempoMov}</td></tr>
+                        <tr><td>Tiempo Demora (Frenado)</td><td style="color:var(--danger); font-weight:bold;">${payloadData.tiempoFrenado}</td></tr>
+                        <tr><td>Cantidad de Paradas</td><td style="font-weight:bold;">${payloadData.paradas}</td></tr>
+                        <tr><td>Cantidad de Observaciones</td><td style="font-weight:bold;">${payloadData.observaciones}</td></tr>
+                        <tr style="background:#fdfdfd; border-top: 2px solid var(--primary);"><td>Velocidad Viaje (Global)</td><td style="font-weight: bold;">${payloadData.velocidadPromedio}</td></tr>
+                        <tr style="background:#f4fcf7;"><td>Velocidad Media Marcha</td><td style="color:#27ae60; font-weight: bold;">${payloadData.velocidadMarcha}</td></tr>
+                        <tr><td>Velocidad Máxima</td><td style="color:var(--danger); font-weight: bold;">${payloadData.velocidadMax}</td></tr>
+                    </table>
+                    <h3>Mapa Interactivo GPS</h3>
+                    <div id="map-informe-vivo"></div>
+                    <h3>Eventos Capturados</h3>
+                    <table class="tabla-resumen">
+                        <thead><tr><th>Hora</th><th>Evento</th><th>Detalle</th></tr></thead>
+                        <tbody>${filasEv}</tbody>
+                    </table>
+                </div>
+                <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"><\/script>
+                <script>
+                    ${jsGeneradorIconos}
+                    const trazaGps = ${JSON.stringify(historialDatos)};
+                    const map = L.map('map-informe-vivo').setView([-32.95, -60.66], 14);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+                    
+                    const coords = trazaGps.map(p => [parseFloat(p.Latitud), parseFloat(p.Longitud)]);
+                    
+                    if(coords.length > 0) {
+                        L.polyline(coords, { color: '#3498db', weight: 6 }).addTo(map);
+                        map.fitBounds(L.polyline(coords).getBounds());
+                        
+                        trazaGps.forEach(p => {
+                            const l = parseFloat(p.Latitud), g = parseFloat(p.Longitud);
+                            if (p.Estado === "FIN_PARADA") {
+                                L.circleMarker([l, g], { radius:8, color:'#e74c3c', fillColor:'#e74c3c', fillOpacity:0.8 }).addTo(map).bindPopup("<b>Demora:</b> "+p.Detalle);
+                            } else if (p.Estado === "OBSERVACION") {
+                                L.marker([l, g], {icon: obtenerIconoVisual(p.Detalle)}).addTo(map).bindPopup("<b>Anotación:</b> "+p.Detalle);
+                            }
+                        });
+                        
+                        const pMaxCoords = ${JSON.stringify(coordsVelocidadMaxima)};
+                        if (pMaxCoords) {
+                            L.marker([pMaxCoords.lat, pMaxCoords.lng], {icon: obtenerIconoVisual('MAX_SPEED')}).addTo(map).bindPopup("<b>Velocidad Máxima Alcanzada</b>");
+                        }
+                    }
+                <\/script>
+            </body>
+            </html>`;
 
-                const documentoHtmlCompleto = `<!DOCTYPE html>
-                <html lang="es">
-                <head>
-                    <meta charset="UTF-8">
-                    <title>Reporte Vehículo Flotante</title>
-                    <style>${estilosPdfHTML}</style>
-                </head>
-                <body>
-                    <div class="card-reporte">
-                        ${reporteClon.innerHTML}
-                    </div>
-                </body>
-                </html>`;
+            const base64ContenidoHtml = btoa(unescape(encodeURIComponent(documentoHtmlCompleto)));
 
-                const base64ContenidoHtml = btoa(unescape(encodeURIComponent(documentoHtmlCompleto)));
+            const paqueteEstudio = {
+                corredor: payloadData.corredor, desde: payloadData.desde, hasta: payloadData.hasta, fechaHora: payloadData.fechaHora,
+                distancia: payloadData.distancia, tiempoTotal: payloadData.tiempoTotal, tiempoMov: payloadData.tiempoMov,
+                tiempoFrenado: payloadData.tiempoFrenado, paradas: payloadData.paradas, observaciones: payloadData.observaciones,
+                velocidadPromedio: payloadData.velocidadPromedio, velocidadMarcha: payloadData.velocidadMarcha,
+                velocidadMax: payloadData.velocidadMax, eficiencia: payloadData.eficiencia,
+                historial: historialDatos, htmlBase64: base64ContenidoHtml 
+            };
 
-                const paqueteEstudio = {
-                    corredor: document.getElementById('in-lugar').value,
-                    desde: document.getElementById('in-desde').value || 'Punto Inicial',
-                    hasta: document.getElementById('in-hasta').value || 'Punto Final',
-                    distancia: document.getElementById('rep-distancia').innerText,
-                    tiempoTotal: document.getElementById('rep-t-total').innerText,
-                    tiempoMov: document.getElementById('rep-t-mov').innerText,
-                    tiempoFrenado: document.getElementById('rep-t-frenado').innerText,
-                    velocidadPromedio: document.getElementById('rep-vel-promedio').innerText,
-                    velocidadMarcha: document.getElementById('rep-vel-marcha').innerText,
-                    velocidadMax: document.getElementById('rep-vel-maxima').innerText,
-                    eficiencia: document.getElementById('rep-eficiencia').innerText,
-                    historial: historialDatos,
-                    pdfBase64: base64ContenidoHtml 
-                };
-
-                fetch(APPS_SCRIPT_URL, {
-                    method: "POST",
-                    mode: "no-cors",
-                    headers: { "Content-Type": "text/plain" },
-                    body: JSON.stringify(paqueteEstudio)
-                })
-                .then(() => {
-                    alert("¡Guardado en Drive! Se generó el Excel y el PDF en tu carpeta.");
-                    btn.innerText = "✅ ¡Subido con éxito!";
-                })
-                .catch(err => {
-                    console.error(err);
-                    alert("Error al enviar a Drive.");
-                    btn.innerText = "☁️ Intentar de nuevo";
-                    btn.disabled = false;
-                    btn.style.backgroundColor = "var(--drive)";
-                });
+            fetch(APPS_SCRIPT_URL, {
+                method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(paqueteEstudio)
+            })
+            .then(() => {
+                alert("¡Guardado en Drive! Se generó el Excel y el Informe Dinámico.");
+                btn.innerText = "✅ ¡Subido con éxito!";
+            })
+            .catch(err => {
+                console.error(err); alert("Error al enviar a Drive.");
+                btn.innerText = "☁️ Intentar de nuevo"; btn.disabled = false; btn.style.backgroundColor = "var(--drive)";
             });
         }
 
@@ -726,92 +535,49 @@
             const wb = XLSX.utils.book_new();
             const resumenAOA = [
                 ["INDICADOR DE TRÁNSITO", "VALOR REGISTRADO"],
-                ["Corredor", document.getElementById('in-lugar').value],
-                ["Desde", document.getElementById('in-desde').value],
-                ["Hasta", document.getElementById('in-hasta').value],
-                ["Distancia Total", document.getElementById('rep-distancia').innerText],
-                ["Tiempo Total Viaje", document.getElementById('rep-t-total').innerText],
-                ["Tiempo en Movimiento", document.getElementById('rep-t-mov').innerText],
-                ["Tiempo Frenado (Demora)", document.getElementById('rep-t-frenado').innerText],
-                ["Velocidad Viaje Global", document.getElementById('rep-vel-promedio').innerText],
-                ["Velocidad Media Marcha", document.getElementById('rep-vel-marcha').innerText],
-                ["Velocidad Máxima", document.getElementById('rep-vel-maxima').innerText],
-                ["Eficiencia Operativa", document.getElementById('rep-eficiencia').innerText]
+                ["Corredor", document.getElementById('in-lugar').value], ["Desde", document.getElementById('in-desde').value], ["Hasta", document.getElementById('in-hasta').value],
+                ["Fecha y Hora", fechaHoraEstudio], ["Distancia Total", document.getElementById('rep-distancia').innerText], ["Tiempo Viaje", document.getElementById('rep-t-total').innerText],
+                ["Tiempo Marcha", document.getElementById('rep-t-mov').innerText], ["Tiempo Demora", document.getElementById('rep-t-frenado').innerText],
+                ["Paradas", contadorParadas], ["Observaciones", contadorObservaciones],
+                ["Velocidad Global", document.getElementById('rep-vel-promedio').innerText], ["Velocidad Marcha", document.getElementById('rep-vel-marcha').innerText],
+                ["Velocidad Máxima", document.getElementById('rep-vel-maxima').innerText], ["Eficiencia Operativa", document.getElementById('rep-eficiencia').innerText]
             ];
-            const wsResumen = XLSX.utils.aoa_to_sheet(resumenAOA);
-            XLSX.utils.book_append_sheet(wb, wsResumen, "Resumen General");
-
-            const wsDetalle = XLSX.utils.json_to_sheet(historialDatos);
-            XLSX.utils.book_append_sheet(wb, wsDetalle, "Traza Completa GPS");
-
+            const wsResumen = XLSX.utils.aoa_to_sheet(resumenAOA); XLSX.utils.book_append_sheet(wb, wsResumen, "Resumen General");
+            const wsDetalle = XLSX.utils.json_to_sheet(historialDatos); XLSX.utils.book_append_sheet(wb, wsDetalle, "Traza GPS");
             XLSX.writeFile(wb, `Estudio_Flotante_${document.getElementById('in-lugar').value.replace(/\s+/g, '_')}.xlsx`);
         }
 
         function exportarPDF() {
             const elementoReporte = document.getElementById('bloque-reporte-pdf');
-            const opciones = {
-                margin:       [12, 12],
-                filename:     `Reporte_Flotante_${document.getElementById('in-lugar').value.replace(/\s+/g, '_')}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-            html2pdf().set(opciones).from(elementoReporte).save();
+            html2pdf().set({ margin: [12, 12], filename: `Reporte_${document.getElementById('in-lugar').value.replace(/\s+/g, '_')}.pdf`, html2canvas: { scale: 2, useCORS: true } }).from(elementoReporte).save();
         }
 
         function exportarCSV() {
             if(historialDatos.length === 0) return;
             const headers = "Hora,Latitud,Longitud,Velocidad_Kmh,Dist_Acum_M,Estado,Detalle\n";
-            const lineas = historialDatos.map(p => 
-                `"${p.Hora}","${p.Latitud}","${p.Longitud}","${p.Velocidad_Kmh}","${p.Dist_Acum_M}","${p.Estado}","${p.Detalle}"`
-            ).join("\n");
-            
-            const blob = new Blob([headers + lineas], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
+            const lineas = historialDatos.map(p => `"${p.Hora}","${p.Latitud}","${p.Longitud}","${p.Velocidad_Kmh}","${p.Dist_Acum_M}","${p.Estado}","${p.Detalle}"`).join("\n");
+            const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([headers + lineas], { type: 'text/csv;charset=utf-8;' }));
             link.setAttribute("download", `Datos_Crudos_${document.getElementById('in-lugar').value.replace(/\s+/g, '_')}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
         }
 
         function actualizarPanelMetricasUI() {
-            document.getElementById('txt-t-total').innerText = formatearMinutosSegundos(segTotales);
-            document.getElementById('txt-t-mov').innerText = formatearMinutosSegundos(segMovimiento);
-            document.getElementById('txt-t-frenado').innerText = formatearMinutosSegundos(segFrenadoTotal);
+            document.getElementById('txt-t-total').innerText = formatearMinutosSegundos(segTotales); document.getElementById('txt-t-mov').innerText = formatearMinutosSegundos(segMovimiento); document.getElementById('txt-t-frenado').innerText = formatearMinutosSegundos(segFrenadoTotal);
             document.getElementById('txt-distancia').innerText = distanciaTotalMetros > 1000 ? (distanciaTotalMetros/1000).toFixed(2) + " km" : Math.floor(distanciaTotalMetros) + " m";
         }
 
         function calcularDistanciaHaversine(lat1, lon1, lat2, lon2) {
-            const R = 6371e3;
-            const p1 = lat1 * Math.PI/180, p2 = lat2 * Math.PI/180;
-            const dPhi = (lat2-lat1) * Math.PI/180, dLambda = (lon2-lon1) * Math.PI/180;
-            const a = Math.sin(dPhi/2)**2 + Math.cos(p1)*Math.cos(p2)*Math.sin(dLambda/2)**2;
-            return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+            const R = 6371e3, p1 = lat1 * Math.PI/180, p2 = lat2 * Math.PI/180, dPhi = (lat2-lat1) * Math.PI/180, dLambda = (lon2-lon1) * Math.PI/180;
+            return R * (2 * Math.atan2(Math.sqrt(Math.sin(dPhi/2)**2 + Math.cos(p1)*Math.cos(p2)*Math.sin(dLambda/2)**2), Math.sqrt(1-Math.sin(dPhi/2)**2 - Math.cos(p1)*Math.cos(p2)*Math.sin(dLambda/2)**2)));
         }
 
-        function formatearMinutosSegundos(segs) {
-            const m = String(Math.floor(segs / 60)).padStart(2, '0');
-            const s = String(segs % 60).padStart(2, '0');
-            return `${m}:${s}`;
-        }
+        function formatearMinutosSegundos(segs) { return `${String(Math.floor(segs / 60)).padStart(2, '0')}:${String(segs % 60).padStart(2, '0')}`; }
 
         function reiniciarApp() {
-            document.getElementById('in-lugar').value = "";
-            document.getElementById('in-desde').value = "";
-            document.getElementById('in-hasta').value = "";
-            
-            map.eachLayer((layer) => {
-                if (layer instanceof L.Marker || layer instanceof L.CircleMarker || layer instanceof L.Polyline) {
-                    map.removeLayer(layer);
-                }
-            });
+            document.getElementById('in-lugar').value = ""; document.getElementById('in-desde').value = ""; document.getElementById('in-hasta').value = "";
+            map.eachLayer((layer) => { if (layer instanceof L.Marker || layer instanceof L.CircleMarker || layer instanceof L.Polyline) { map.removeLayer(layer); } });
             rutaInstancia = L.polyline([], {color: '#3498db', weight: 6}).addTo(map);
-
-            const objetoMapa = document.getElementById('map');
-            document.getElementById('map-wrapper').appendChild(objetoMapa);
-            
-            cambiarPantalla('pantalla-config');
+            document.getElementById('map-wrapper').appendChild(document.getElementById('map')); cambiarPantalla('pantalla-config');
         }
     </script>
 </body>
