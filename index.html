@@ -11,15 +11,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
-        :root {
-            --primary: #2c3e50; --accent: #2ecc71; --danger: #e74c3c;
-            --warning: #f39c12; --info: #3498db; --drive: #1ea362; --bg-light: #f8f9fa;
-        }
+        :root { --primary: #2c3e50; --accent: #2ecc71; --danger: #e74c3c; --warning: #f39c12; --info: #3498db; --drive: #1ea362; --bg-light: #f8f9fa; }
         html, body { height: 100%; margin: 0; padding: 0; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-            background-color: var(--bg-light); height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden;
-        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background-color: var(--bg-light); height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
         .pantalla { display: none; flex-direction: column; width: 100%; height: 100%; box-sizing: border-box; }
         .pantalla.activa { display: flex; }
 
@@ -41,6 +35,7 @@
         #map-wrapper { flex-grow: 1; width: 100%; min-height: 0; display: flex; flex-direction: column; }
         #map { width: 100%; height: 100%; z-index: 1; }
 
+        #pantalla-edicion { padding: 20px; overflow-y: auto; background: #f4f6f7; }
         #pantalla-resumen { padding: 15px; overflow-y: auto; background: #f4f6f7; }
         .card-reporte { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 15px; }
         .card-reporte h2 { margin-top: 0; color: var(--primary); border-bottom: 2px solid #eee; padding-bottom: 10px; }
@@ -76,6 +71,10 @@
         /* Estilo para los pines con Emojis en Leaflet */
         .custom-div-icon { background: transparent; border: none; }
         .pin-obs { display: flex; align-items: center; justify-content: center; border-radius: 50%; color: white; font-size: 14px; font-weight: bold; border: 2px solid white; box-shadow: 0 3px 6px rgba(0,0,0,0.4); text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
+        
+        .item-edicion { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+        .item-edicion input { flex: 1; padding: 12px; border: 1px solid #bdc3c7; border-radius: 6px; font-size: 1em; }
+        .item-edicion button { margin: 0; padding: 12px 15px; font-size: 1em; }
     </style>
 </head>
 <body>
@@ -105,8 +104,17 @@
 
         <div class="botonera-fija">
             <button class="btn-warning" style="flex: 2;" onclick="abrirModalObs()">Observación</button>
-            <button class="btn-alerta" style="flex: 1;" onclick="finalizarRecorrido()">Fin</button>
+            <button class="btn-alerta" style="flex: 1;" onclick="prepararEdicion()">Fin</button>
         </div>
+    </div>
+
+    <div id="pantalla-edicion" class="pantalla">
+        <h2 style="color: var(--primary); text-align: center; margin-top: 0;">Revisión de Eventos</h2>
+        <p style="text-align: center; opacity: 0.8; margin-top: 0; margin-bottom: 20px;">Edite o elimine las observaciones del viaje antes de generar el informe final.</p>
+        
+        <div id="lista-notas" style="flex-grow: 1; overflow-y: auto; margin-bottom: 15px;"></div>
+        
+        <button class="btn-accion" onclick="irAResumen()">Generar Informe Final ➔</button>
     </div>
 
     <div id="pantalla-resumen" class="pantalla">
@@ -192,7 +200,6 @@
         let segTotales = 0, segMovimiento = 0, segFrenadoTotal = 0, segDesdeUltimaParada = 0, distanciaTotalMetros = 0;
         let ultimoPunto = null, estaDetenido = false, inicioParadaTime = null, marcadorParadaActual = null;
 
-        // Nuevos Contadores y Variables
         let maximaVelocidadKmh = 0;
         let coordsVelocidadMaxima = null;
         let contadorParadas = 0;
@@ -208,18 +215,18 @@
         };
 
         function obtenerIconoVisual(tipoString) {
-            let emoji = '📌'; let colorHex = '#3498db'; let size = 30;
+            let emoji = '📌'; let colorHex = '#3498db'; let size = 15;
             
             if (tipoString.includes('Doble Fila')) { emoji = '🚗'; colorHex = '#e67e22'; }
             else if (tipoString.includes('Camiones')) { emoji = '🚛'; colorHex = '#8e44ad'; }
             else if (tipoString.includes('Bus') || tipoString.includes('Colectivo')) { emoji = '🚌'; colorHex = '#f39c12'; }
             else if (tipoString.includes('Obras')) { emoji = '🚧'; colorHex = '#d35400'; }
             else if (tipoString.includes('Ind.')) { emoji = '🏭'; colorHex = '#7f8c8d'; }
-            else if (tipoString.includes('Congestión Media')) { emoji = '🟡'; colorHex = '#f1c40f'; size = 26; }
-            else if (tipoString.includes('Congestión Crítica')) { emoji = '🛑'; colorHex = '#c0392b'; size = 32;}
-            else if (tipoString.includes('Rápido a Lento')) { emoji = '↘️'; colorHex = '#16a085'; size=26;}
-            else if (tipoString.includes('Lento a Rápido')) { emoji = '↗️'; colorHex = '#16a085'; size=26;}
-            else if (tipoString === 'MAX_SPEED') { emoji = '⚡'; colorHex = '#f1c40f'; size = 34; } 
+            else if (tipoString.includes('Congestión Media')) { emoji = '🟡'; colorHex = '#f1c40f'; size = 15; }
+            else if (tipoString.includes('Congestión Crítica')) { emoji = '🛑'; colorHex = '#c0392b'; size = 15;}
+            else if (tipoString.includes('Rápido a Lento')) { emoji = '↘️'; colorHex = '#16a085'; size=15;}
+            else if (tipoString.includes('Lento a Rápido')) { emoji = '↗️'; colorHex = '#16a085'; size=15;}
+            else if (tipoString === 'MAX_SPEED') { emoji = '⚡'; colorHex = '#f1c40f'; size = 20; } 
             
             return L.divIcon({
                 className: 'custom-div-icon',
@@ -238,8 +245,8 @@
             contadorParadas = 0; contadorObservaciones = 0;
             ultimoPunto = null; estaDetenido = false;
             
-            // Guardamos la fecha y hora exacta del inicio
-            fechaHoraEstudio = new Date().toLocaleString('es-AR');
+            // Hora correcta y fija en Argentina (UTC-3)
+            fechaHoraEstudio = new Date().toLocaleString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' });
 
             cambiarPantalla('pantalla-app');
             setTimeout(() => map.invalidateSize(), 200);
@@ -295,9 +302,11 @@
                     registrarLogGeneral(lat, lng, velocidadKmh, "FIN_PARADA", `Frenado: ${duracionParadaSeg}s`);
                     
                     if (duracionParadaSeg > 1) {
-                        contadorParadas++; // Incrementamos el contador de paradas
-                        registroEventosEspeciales.push({
-                            hora: new Date().toLocaleTimeString(), evento: "🛑 Parada / Demora", detalle: `Vehículo detenido durante ${duracionParadaSeg} segundos.`
+                        contadorParadas++;
+                        const horaArg = new Date().toLocaleTimeString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' });
+                        registroEventosEspeciales.push({ 
+                            hora: horaArg, evento: "🛑 Parada / Demora", detalle: `Vehículo detenido durante ${duracionParadaSeg} segundos.`,
+                            refIndex: historialDatos.length - 1
                         });
                         if (marcadorParadaActual) marcadorParadaActual.bindPopup(`Demora: ${duracionParadaSeg}s`).openPopup();
                     } else {
@@ -314,13 +323,64 @@
         }
 
         function registrarLogGeneral(lat, lng, vel, evento, det) {
-            historialDatos.push({ Hora: new Date().toISOString(), Latitud: lat.toFixed(6), Longitud: lng.toFixed(6), Velocidad_Kmh: vel.toFixed(2), Dist_Acum_M: distanciaTotalMetros.toFixed(1), Estado: evento, Detalle: det });
+            const fechaArgentina = new Date().toLocaleString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' });
+            historialDatos.push({ Hora: fechaArgentina, Latitud: lat.toFixed(6), Longitud: lng.toFixed(6), Velocidad_Kmh: vel.toFixed(2), Dist_Acum_M: distanciaTotalMetros.toFixed(1), Estado: evento, Detalle: det });
         }
 
-        function finalizarRecorrido() {
+        // ================= FLUJO DE EDICIÓN DE EVENTOS =================
+        function prepararEdicion() {
             if (watchId) navigator.geolocation.clearWatch(watchId);
             if (cronometroId) clearInterval(cronometroId);
             
+            cambiarPantalla('pantalla-edicion');
+            renderizarListaEdicion();
+        }
+
+        function renderizarListaEdicion() {
+            const contenedor = document.getElementById('lista-notas');
+            contenedor.innerHTML = "";
+            
+            if (registroEventosEspeciales.length === 0) {
+                contenedor.innerHTML = "<p style='text-align:center;'>No se registraron paradas ni observaciones manuales en este viaje.</p>";
+            } else {
+                registroEventosEspeciales.forEach((ev, i) => {
+                    contenedor.innerHTML += `
+                    <div class="card" style="padding: 15px; margin-bottom: 10px; border-left: 5px solid var(--primary);">
+                        <div style="font-weight: bold; color: var(--primary); margin-bottom: 5px;">${ev.hora} - ${ev.evento}</div>
+                        <div class="item-edicion">
+                            <input type="text" id="edit-nota-${i}" value="${ev.detalle}">
+                            <button class="btn-alerta" onclick="borrarNota(${i})">🗑️ Borrar</button>
+                        </div>
+                    </div>`;
+                });
+            }
+        }
+
+        function borrarNota(index) {
+            const ev = registroEventosEspeciales[index];
+            if (ev.evento.includes("Parada")) contadorParadas--;
+            if (ev.evento.includes("Observación")) contadorObservaciones--;
+            
+            if(ev.refIndex !== undefined && historialDatos[ev.refIndex]) {
+                 historialDatos[ev.refIndex].Estado = "ELIMINADO"; 
+            }
+            registroEventosEspeciales.splice(index, 1);
+            renderizarListaEdicion();
+        }
+
+        function irAResumen() {
+            registroEventosEspeciales.forEach((ev, i) => {
+                const newVal = document.getElementById(`edit-nota-${i}`).value;
+                ev.detalle = newVal;
+                if(ev.refIndex !== undefined && historialDatos[ev.refIndex]) {
+                    historialDatos[ev.refIndex].Detalle = newVal;
+                }
+            });
+
+            // Limpiar datos eliminados del Excel
+            historialDatos = historialDatos.filter(h => h.Estado !== "ELIMINADO");
+
+            // Preparar Resumen Visual
             if (coordsVelocidadMaxima && maximaVelocidadKmh > 10) {
                 L.marker([coordsVelocidadMaxima.lat, coordsVelocidadMaxima.lng], { icon: obtenerIconoVisual('MAX_SPEED'), zIndexOffset: 1000 })
                  .addTo(map).bindPopup(`<b>⚡ Velocidad Máxima Alcanzada:</b><br>${maximaVelocidadKmh.toFixed(1)} km/h`);
@@ -328,7 +388,6 @@
 
             const objetoMapa = document.getElementById('map');
             document.getElementById('mapa-reporte-contenedor').appendChild(objetoMapa);
-
             setTimeout(() => { map.invalidateSize(); if(ultimoPunto) map.setView([ultimoPunto.lat, ultimoPunto.lng], 15); }, 150);
             
             document.getElementById('rep-corredor').innerText = document.getElementById('in-lugar').value;
@@ -358,17 +417,15 @@
             const tbody = document.querySelector('#tabla-eventos-detalle tbody');
             tbody.innerHTML = "";
             if(registroEventosEspeciales.length === 0) {
-                tbody.innerHTML = "<tr><td colspan='3' style='text-align:center; color:#95a5a6;'>No se registraron demoras ni observaciones.</td></tr>";
+                tbody.innerHTML = "<tr><td colspan='3' style='text-align:center; color:#95a5a6;'>No se registraron eventos.</td></tr>";
             } else {
                 registroEventosEspeciales.forEach(ev => { tbody.innerHTML += `<tr><td>${ev.hora}</td><td>${ev.evento}</td><td>${ev.detalle}</td></tr>`; });
             }
 
-            const btnDrive = document.getElementById('btn-subir-drive');
-            btnDrive.innerText = "☁️ Guardar en Google Drive"; btnDrive.disabled = false; btnDrive.style.backgroundColor = "var(--drive)";
-
             cambiarPantalla('pantalla-resumen');
         }
 
+        // ================= EVENTOS Y MODALES =================
         function abrirModalObs() { document.getElementById('modal-obs').style.display = 'flex'; }
         function cerrarModalObs() { document.getElementById('modal-obs').style.display = 'none'; document.getElementById('in-obs-manual').value = ""; }
         
@@ -376,8 +433,11 @@
             const lat = ultimoPunto ? ultimoPunto.lat : 0; const lng = ultimoPunto ? ultimoPunto.lng : 0;
             registrarLogGeneral(lat, lng, 0, "OBSERVACION", tipoObs);
             
-            contadorObservaciones++; // Incrementamos el contador
-            registroEventosEspeciales.push({ hora: new Date().toLocaleTimeString(), evento: "⚠️ Observación", detalle: tipoObs });
+            contadorObservaciones++;
+            const horaArg = new Date().toLocaleTimeString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' });
+            registroEventosEspeciales.push({ 
+                hora: horaArg, evento: "⚠️ Observación", detalle: tipoObs, refIndex: historialDatos.length - 1 
+            });
 
             if(ultimoPunto) {
                 L.marker([lat, lng], { icon: obtenerIconoVisual(tipoObs) }).addTo(map).bindPopup(`<b>Observado:</b> ${tipoObs}`).openPopup();
@@ -391,16 +451,14 @@
             inyectarObservacion(`Nota: ${txt}`);
         }
 
-        // FUNCIÓN ACTUALIZADA: Genera y sube el HTML dinámico puro sin usar html2canvas
+        // ================= EXPORTACIONES =================
         function subirAGoogleDrive() {
             if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === "TU_URL_DE_APPS_SCRIPT_AQUI" || APPS_SCRIPT_URL.trim() === "") { 
-                alert("Por favor configura tu URL de Apps Script (línea 184)."); return; 
+                alert("Por favor configura tu URL de Apps Script en la línea 240."); return; 
             }
 
             const btn = document.getElementById('btn-subir-drive');
-            btn.innerText = "🔄 Compilando y subiendo...";
-            btn.disabled = true;
-            btn.style.backgroundColor = "#7f8c8d";
+            btn.innerText = "🔄 Compilando y subiendo..."; btn.disabled = true; btn.style.backgroundColor = "#7f8c8d";
 
             const payloadData = {
                 corredor: document.getElementById('in-lugar').value,
@@ -411,8 +469,7 @@
                 tiempoTotal: document.getElementById('rep-t-total').innerText,
                 tiempoMov: document.getElementById('rep-t-mov').innerText,
                 tiempoFrenado: document.getElementById('rep-t-frenado').innerText,
-                paradas: contadorParadas,
-                observaciones: contadorObservaciones,
+                paradas: contadorParadas, observaciones: contadorObservaciones,
                 velocidadPromedio: document.getElementById('rep-vel-promedio').innerText,
                 velocidadMarcha: document.getElementById('rep-vel-marcha').innerText,
                 velocidadMax: document.getElementById('rep-vel-maxima').innerText,
@@ -424,7 +481,6 @@
 
             const jsGeneradorIconos = obtenerIconoVisual.toString();
 
-            // Construcción del documento HTML con la etiqueta script escapada
             const documentoHtmlCompleto = `<!DOCTYPE html>
             <html lang="es">
             <head>
