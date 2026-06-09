@@ -32,21 +32,13 @@
         .pantalla.activa { display: flex; }
  
         /* ── PANTALLA CONFIG ── */
-        #pantalla-config {
-            padding: 25px; justify-content: center;
-            background: linear-gradient(135deg, #2c3e50, #34495e);
-            color: white; overflow-y: auto;
-        }
-        .header-config { text-align: center; margin-bottom: 25px; }
+        #pantalla-config { padding: 20px 20px 40px 20px; justify-content: flex-start; background: linear-gradient(135deg, #2c3e50, #34495e); color: white; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
+        .header-config { text-align: center; margin-bottom: 15px; }
         .header-config h1 { margin: 0; font-size: 1.8em; color: var(--accent); }
         .header-config p { margin: 5px 0 0 0; opacity: 0.8; font-size: 0.9em; }
         .form-group { margin-bottom: 16px; display: flex; flex-direction: column; }
         .form-group label { font-size: 0.8em; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; font-weight: bold; }
-        .form-group input {
-            padding: 13px; border: none; border-radius: 8px; font-size: 1em;
-            background: rgba(255,255,255,0.1); color: white;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
+        .form-group input { padding: 13px; border: none; border-radius: 8px; font-size: 1em; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); width: 100%; box-sizing: border-box; }
         .form-group input::placeholder { color: rgba(255,255,255,0.4); }
         .form-group input:focus { outline: 2px solid var(--accent); background: rgba(255,255,255,0.2); }
         .form-group .campo-opcional { font-size: 0.75em; opacity: 0.6; margin-top: 4px; }
@@ -245,7 +237,7 @@
         <span class="campo-opcional">Si completás este campo, el informe calculará el error relativo del GPS.</span>
     </div>
  
-    <button class="btn-accion" style="margin-top: 20px;" onclick="irAPantallaApp()">Comenzar Recorrido</button>
+    <button class="btn-accion" style="margin-top: 20px; box-sizing: border-box; width: 100%;" onclick="irAPantallaApp()">Comenzar Recorrido</button>
 </div>
  
  
