@@ -1225,15 +1225,20 @@ ${distanciaReferenciaMts ? `<tr><td>Distancia Referencia</td><td>${payloadData.d
 <tr><td>Eficiencia Operativa</td><td><b>${payloadData.eficiencia}</b></td></tr>
 </table>
  
-<div style="background:#f0f7ff;padding:16px;margin-top:20px;border-left:4px solid var(--info);border-radius:6px;font-size:0.9em;line-height:1.7;color:#2c3e50;">
-  <strong>📐 Índice de Marcha (Running Time Index - RTI)</strong><br>
-  Se calcula como: <code>Velocidad de Viaje ÷ Velocidad de Marcha</code><br>
-  <ul style="margin:8px 0;padding-left:20px;">
-    <li><strong>RTI ≥ 0.85</strong> → Buena fluidez operativa (la mayoría de la velocidad potencial se alcanza)</li>
-    <li><strong>0.65 a 0.85</strong> → Fluidez media (demoras moderadas afectan la velocidad)</li>
-    <li><strong>&lt; 0.65</strong> → Fluidez baja (muchas paradas/congestión reduce significativamente la velocidad)</li>
-  </ul>
-  <strong>Interpretación:</strong> Cuanto más próximo a 1.0, mejor es la eficiencia operativa del corredor. Un valor bajo indica que el tiempo se pierde principalmente en demoras y paradas.
+<div style="background:#f0f7ff;padding:0;margin-top:20px;border-left:4px solid var(--info);border-radius:6px;overflow:hidden;">
+  <button onclick="toggleAccordion(this)" style="width:100%;text-align:left;padding:16px;background:#f0f7ff;border:none;cursor:pointer;font-size:0.95em;font-weight:bold;color:#2c3e50;display:flex;justify-content:space-between;align-items:center;">
+    <span>📐 Índice de Marcha (Running Time Index - RTI)</span>
+    <span style="font-size:1.2em;transition:transform 0.3s;">▼</span>
+  </button>
+  <div class="accordion-content" style="display:none;padding:16px;background:white;border-top:1px solid #dde8f5;font-size:0.9em;line-height:1.7;color:#2c3e50;">
+    Se calcula como: <code style="background:#ecf0f1;padding:2px 6px;border-radius:3px;">Velocidad de Viaje ÷ Velocidad de Marcha</code><br>
+    <ul style="margin:12px 0;padding-left:20px;">
+      <li><strong>RTI ≥ 0.85</strong> → Buena fluidez operativa (la mayoría de la velocidad potencial se alcanza)</li>
+      <li><strong>0.65 a 0.85</strong> → Fluidez media (demoras moderadas afectan la velocidad)</li>
+      <li><strong>&lt; 0.65</strong> → Fluidez baja (muchas paradas/congestión reduce significativamente la velocidad)</li>
+    </ul>
+    <strong>Interpretación:</strong> Cuanto más próximo a 1.0, mejor es la eficiencia operativa del corredor. Un valor bajo indica que el tiempo se pierde principalmente en demoras y paradas.
+  </div>
 </div>
  
 <h3>Mapa Interactivo GPS</h3>
@@ -1341,9 +1346,23 @@ if(coords.length>0){
   ctx.fillStyle='#8e44ad';ctx.fillRect(PL+80,PT,10,10);ctx.fillStyle='#555';ctx.fillText("Semáforo",PL+93,PT+9);
   ctx.fillStyle='#e74c3c';ctx.fillRect(PL+158,PT,10,10);ctx.fillStyle='#555';ctx.fillText("Parada",PL+171,PT+9);
 })();
+
+// ── Función para acordeón desplegable ──
+function toggleAccordion(btn) {
+  const content = btn.nextElementSibling;
+  const arrow = btn.querySelector('span:last-child');
+  
+  if (content.style.display === 'none') {
+    content.style.display = 'block';
+    arrow.style.transform = 'rotate(180deg)';
+  } else {
+    content.style.display = 'none';
+    arrow.style.transform = 'rotate(0deg)';
+  }
+}
 <\/script>
 </body></html>`;
- 
+
     const base64Html = btoa(unescape(encodeURIComponent(documentoHtmlCompleto)));
  
     const paqueteEstudio = {
