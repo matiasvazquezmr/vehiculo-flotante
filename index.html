@@ -32,13 +32,22 @@
         .pantalla.activa { display: flex; }
  
         /* ── PANTALLA CONFIG ── */
-        #pantalla-config { padding: 20px 20px 40px 20px; justify-content: flex-start; background: linear-gradient(135deg, #2c3e50, #34495e); color: white; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
-        .header-config { text-align: center; margin-bottom: 15px; }
-        .header-config h1 { margin: 0; font-size: 1.8em; color: var(--accent); }
-        .header-config p { margin: 5px 0 0 0; opacity: 0.8; font-size: 0.9em; }
+        #pantalla-config {
+            padding: 15px 20px 40px 20px; justify-content: flex-start;
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white; overflow-y: auto; overflow-x: hidden;
+        }
+
+        .header-config { text-align: center; margin-bottom: 12px; }
+        .header-config h1 { margin: 0; font-size: 1.4em; color: var(--accent); }
+        .header-config p { margin: 3px 0 0 0; opacity: 0.8; font-size: 0.8em; }
         .form-group { margin-bottom: 16px; display: flex; flex-direction: column; }
         .form-group label { font-size: 0.8em; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; font-weight: bold; }
-        .form-group input { padding: 13px; border: none; border-radius: 8px; font-size: 1em; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); width: 100%; box-sizing: border-box; }
+        .form-group input {
+            padding: 13px; border: none; border-radius: 8px; font-size: 1em;
+            background: rgba(255,255,255,0.1); color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
         .form-group input::placeholder { color: rgba(255,255,255,0.4); }
         .form-group input:focus { outline: 2px solid var(--accent); background: rgba(255,255,255,0.2); }
         .form-group .campo-opcional { font-size: 0.75em; opacity: 0.6; margin-top: 4px; }
@@ -122,8 +131,8 @@
         }
         .grid-obs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0 5px 0; }
         .btn-obs-opcion {
-            background: #ecf0f1; color: var(--primary); font-size: 0.75em;
-            text-transform: none; padding: 10px 5px;
+            background: #ecf0f1; color: var(--primary); font-size: 0.78em;
+            text-transform: none; padding: 12px 5px;
         }
         .btn-obs-semaforo {
             grid-column: 1 / -1;
@@ -139,7 +148,7 @@
         /* ── MODAL SEMÁFORO ── */
         #modal-semaforo {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); z-index: 2100; display: none;
+            background: rgba(0,0,0,0.75); z-index: 2100; display: none;
             justify-content: center; align-items: center;
         }
         .modal-semaforo-content {
@@ -150,10 +159,17 @@
         .semaforo-timer {
             font-size: 3.5em; font-weight: bold; color: var(--semaforo);
             font-variant-numeric: tabular-nums; letter-spacing: 2px;
-            margin: 10px 0;
+            margin: 15px 0;
         }
-        .semaforo-estado { font-size: 0.9em; color: #7f8c8d; margin-bottom: 15px; }
-        #btn-verde { background: #27ae60; color: white; width: 100%; font-size: 1.1em; padding: 16px; margin-top: 10px; }
+        .semaforo-estado { font-size: 0.9em; color: #7f8c8d; margin-bottom: 10px; }
+        #btn-verde { background: #27ae60; color: white; width: 100%; font-size: 1.1em; padding: 16px; }
+        .semaforo-nota-wrap { margin: 10px 0 16px 0; text-align: left; }
+        .semaforo-nota-wrap label { font-size: 0.8em; font-weight: bold; color: #555; display: block; margin-bottom: 5px; }
+        .semaforo-nota-wrap input {
+            width: 100%; box-sizing: border-box; padding: 10px 12px;
+            border: 1px solid #ccc; border-radius: 8px; font-size: 0.9em;
+            color: #333;
+        }
  
         /* ── GRÁFICO PERFIL ── */
         #contenedor-grafico { width: 100%; overflow-x: auto; margin-top: 10px; }
@@ -185,6 +201,9 @@
 </head>
 <body>
  
+<!-- ══════════════════════════════════════════════════
+     PANTALLA 1 — CONFIGURACIÓN
+══════════════════════════════════════════════════ -->
 <div id="pantalla-config" class="pantalla activa">
     <div class="header-config">
         <h1>Vehículo Flotante</h1>
@@ -234,10 +253,13 @@
         <span class="campo-opcional">Si completás este campo, el informe calculará el error relativo del GPS.</span>
     </div>
  
-    <button class="btn-accion" style="margin-top: 20px; box-sizing: border-box; width: 100%;" onclick="irAPantallaApp()">Comenzar Recorrido</button>
+    <button class="btn-accion" style="margin-top: 20px;" onclick="irAPantallaApp()">Comenzar Recorrido</button>
 </div>
  
  
+<!-- ══════════════════════════════════════════════════
+     PANTALLA 2 — CAPTURA EN CAMPO
+══════════════════════════════════════════════════ -->
 <div id="pantalla-app" class="pantalla">
     <div id="panel-metricas">
         <div class="metrica">T. Total<span id="txt-t-total">00:00</span></div>
@@ -261,6 +283,9 @@
 </div>
  
  
+<!-- ══════════════════════════════════════════════════
+     PANTALLA 3 — EDICIÓN DE EVENTOS
+══════════════════════════════════════════════════ -->
 <div id="pantalla-edicion" class="pantalla">
     <h2 style="color: var(--primary); text-align: center; margin-top: 0;">Revisión de Eventos</h2>
     <p style="text-align: center; opacity: 0.8; margin-top: 0; margin-bottom: 20px;">
@@ -271,6 +296,9 @@
 </div>
  
  
+<!-- ══════════════════════════════════════════════════
+     PANTALLA 4 — RESUMEN / INFORME
+══════════════════════════════════════════════════ -->
 <div id="pantalla-resumen" class="pantalla">
     <div id="bloque-reporte-pdf" class="card-reporte">
         <h2>Resumen Vehículo Flotante</h2>
@@ -347,6 +375,9 @@
 </div>
  
  
+<!-- ══════════════════════════════════════════════════
+     MODAL — OBSERVACIÓN GENERAL
+══════════════════════════════════════════════════ -->
 <div id="modal-obs">
     <div class="modal-content">
         <h3 style="margin-top:0; text-align:center; color:var(--primary);">Registrar Evento Vial</h3>
@@ -355,16 +386,18 @@
             <button class="btn-obs-opcion" onclick="inyectarObservacion('Flujo de Camiones')">🚛 Camiones</button>
             <button class="btn-obs-opcion" onclick="inyectarObservacion('Bloqueo Colectivo')">🚌 Parada Bus</button>
             <button class="btn-obs-opcion" onclick="inyectarObservacion('Obras en Calzada')">🚧 Obras</button>
-            
-            <button class="btn-obs-opcion" onclick="inyectarObservacion('Inicio Congestión Media')">🟡 Inicia Cong. Media</button>
-            <button class="btn-obs-opcion" onclick="inyectarObservacion('Fin Congestión Media')">🟢 Fin Cong. Media</button>
-            <button class="btn-obs-opcion" onclick="inyectarObservacion('Inicio Congestión Crítica')">🛑 Inicia Cong. Crítica</button>
-            <button class="btn-obs-opcion" onclick="inyectarObservacion('Fin Congestión Crítica')">🏁 Fin Cong. Crítica</button>
-            
-            <button class="btn-obs-opcion" onclick="inyectarObservacion('Cambio Carril (Rápido a Lento)')">↘️ Ráp. a Lento</button>
-            <button class="btn-obs-opcion" onclick="inyectarObservacion('Cambio Carril (Lento a Rápido)')">↗️ Lento a Ráp.</button>
             <button class="btn-obs-opcion" onclick="inyectarObservacion('Zona Industrial')">🏭 Zona Ind.</button>
             <button class="btn-obs-opcion" onclick="inyectarObservacion('Peatones en Calzada')">🚶 Peatones</button>
+            <button class="btn-obs-opcion" onclick="inyectarObservacion('Cambio Carril (Rápido a Lento)')">↘️ Ráp. a Lento</button>
+            <button class="btn-obs-opcion" onclick="inyectarObservacion('Cambio Carril (Lento a Rápido)')">↗️ Lento a Ráp.</button>
+            <button class="btn-obs-opcion" style="background:#fff8e1; color:#b7770d; border:1.5px solid #f39c12;"
+                onclick="inyectarObservacion('Inicio Congestión Media')">🟡 Ini. Cong. Media</button>
+            <button class="btn-obs-opcion" style="background:#fff8e1; color:#b7770d; border:1.5px solid #f39c12;"
+                onclick="inyectarObservacion('Fin Congestión Media')">🟢 Fin Cong. Media</button>
+            <button class="btn-obs-opcion" style="background:#fdecea; color:#c0392b; border:1.5px solid #e74c3c;"
+                onclick="inyectarObservacion('Inicio Congestión Crítica')">🔴 Ini. Cong. Crítica</button>
+            <button class="btn-obs-opcion" style="background:#fdecea; color:#c0392b; border:1.5px solid #e74c3c;"
+                onclick="inyectarObservacion('Fin Congestión Crítica')">🟢 Fin Cong. Crítica</button>
         </div>
         <div class="seccion-obs-libre">
             <label>✏️ Otro Evento:</label>
@@ -378,20 +411,27 @@
 </div>
  
  
+<!-- ══════════════════════════════════════════════════
+     MODAL — CRONÓMETRO SEMÁFORO
+══════════════════════════════════════════════════ -->
 <div id="modal-semaforo">
     <div class="modal-semaforo-content">
         <div class="semaforo-icono">🚦</div>
         <div style="font-weight:bold; color:var(--semaforo); font-size:1em; margin-bottom:4px;">SEMÁFORO EN ROJO</div>
         <div class="semaforo-estado">Tocá VERDE cuando el semáforo habilite el paso</div>
         <div class="semaforo-timer" id="semaforo-display">00:00</div>
-        
-        <input type="text" id="in-semaforo-nota" class="input-lista" placeholder="Nota opcional..." style="margin-bottom: 15px; text-align:center;">
-        
+        <div class="semaforo-nota-wrap">
+            <label>📝 Nota (opcional):</label>
+            <input type="text" id="semaforo-nota" placeholder="Ej: Intersección Pellegrini y Oroño">
+        </div>
         <button id="btn-verde" onclick="finalizarSemaforo()">🟢 VERDE — Registrar y continuar</button>
     </div>
 </div>
  
  
+<!-- ══════════════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════════════ -->
 <script>
 // ────────────────────────────────────────────────────
 //  CONFIGURACIÓN
@@ -399,10 +439,11 @@
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwStYznyBUKeMW0ir2uqR5PFM92Mzb-1lIWpz4cfTt2krJBI-ZVvHb73w3Wm4G7OQL9/exec";
  
 // Umbral de velocidad para declarar parada (km/h).
-const UMBRAL_VELOCIDAD_PARADA = 8.0; 
-const TICKS_MIN_PARADA        = 3;   
-const UMBRAL_PRECISION_GPS    = 25;  
-const UMBRAL_VELOCIDAD_MAXIMA = 120; 
+// El vehículo debe estar BAJO este umbral durante al menos TICKS_MIN_PARADA ticks consecutivos.
+const UMBRAL_VELOCIDAD_PARADA = 8.0;  // fix: antes era 4 km/h (muy bajo, falsos positivos GPS)
+const TICKS_MIN_PARADA        = 3;    // fix: 3 segundos consecutivos antes de declarar parada
+const UMBRAL_PRECISION_GPS    = 25;   // metros — por encima de este valor se advierte
+const UMBRAL_VELOCIDAD_MAXIMA = 120;  // km/h — filtro de spike GPS (antes 140, más conservador)
  
 // ────────────────────────────────────────────────────
 //  ESTADO GLOBAL
@@ -415,12 +456,12 @@ let segTotales = 0, segMovimiento = 0, segFrenadoTotal = 0;
 let segDesdeUltimaParada = 0, distanciaTotalMetros = 0;
 let ultimoPunto = null, estaDetenido = false;
 let inicioParadaTime = null, marcadorParadaActual = null;
-let ticksBajoUmbral = 0; 
+let ticksBajoUmbral = 0;   // fix: contador de ticks consecutivos bajo umbral
  
 let maximaVelocidadKmh = 0, coordsVelocidadMaxima = null;
 let contadorParadas = 0, contadorObservaciones = 0;
 let contadorParadasSemaforo = 0;
-let tiempoTotalDemoraSeg = 0; 
+let tiempoTotalDemoraSeg = 0; // suma de segundos de todas las paradas
  
 let fechaHoraEstudio = "";
 let distanciaReferenciaMts = null;
@@ -428,9 +469,11 @@ let distanciaReferenciaMts = null;
 // Semáforo
 let semaforoId = null, semaforoSegundos = 0, inicioSemaforoTime = null;
  
-// Perfil de velocidad
-let muestrasPerfil = []; 
+// Perfil de velocidad: muestreo cada 5 segundos para el gráfico
+let muestrasPerfil = [];  // { t: seg, v: km/h }
 let segMuestreo = 0;
+ 
+// fix: último punto GPS aceptado con buena precisión
 let ultimoPuntoGpsPreciso = null;
  
 // ────────────────────────────────────────────────────
@@ -444,6 +487,9 @@ window.onload = () => {
     rutaInstancia = L.polyline([], { color: '#3498db', weight: 6 }).addTo(map);
 };
  
+// ────────────────────────────────────────────────────
+//  NAVEGACIÓN ENTRE PANTALLAS
+// ────────────────────────────────────────────────────
 function cambiarPantalla(idPantalla) {
     document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('activa'));
     document.getElementById(idPantalla).classList.add('activa');
@@ -458,6 +504,7 @@ function irAPantallaApp() {
         return;
     }
  
+    // Reset completo
     historialDatos = []; registroEventosEspeciales = [];
     segTotales = 0; segMovimiento = 0; segFrenadoTotal = 0;
     segDesdeUltimaParada = 0; distanciaTotalMetros = 0;
@@ -471,11 +518,14 @@ function irAPantallaApp() {
     const distRef = parseFloat(document.getElementById('in-distancia-ref').value);
     distanciaReferenciaMts = isNaN(distRef) || distRef <= 0 ? null : distRef;
  
-    fechaHoraEstudio = horaArgentina();
+    fechaHoraEstudio = new Date().toLocaleString('es-AR', {
+        timeZone: 'America/Argentina/Buenos_Aires'
+    });
  
     cambiarPantalla('pantalla-app');
     setTimeout(() => map.invalidateSize(), 200);
  
+    // Cronómetro principal
     cronometroId = setInterval(() => {
         segTotales++;
         if (estaDetenido) {
@@ -485,6 +535,7 @@ function irAPantallaApp() {
             segDesdeUltimaParada++;
         }
  
+        // Muestreo del perfil de velocidad (cada 5 seg)
         segMuestreo++;
         if (segMuestreo % 5 === 0) {
             const velActual = ultimoPunto ? parseFloat(
@@ -496,6 +547,7 @@ function irAPantallaApp() {
         actualizarPanelMetricasUI();
     }, 1000);
  
+    // GPS con watchPosition
     if ("geolocation" in navigator) {
         watchId = navigator.geolocation.watchPosition(
             procesarTelemetriaGPS,
@@ -517,8 +569,9 @@ function procesarTelemetriaGPS(position) {
     const lat       = position.coords.latitude;
     const lng       = position.coords.longitude;
     const timestamp = position.timestamp;
-    const accuracy  = position.coords.accuracy;
+    const accuracy  = position.coords.accuracy; // metros — FIX: ahora se usa
  
+    // fix: mostrar precisión GPS en tiempo real
     actualizarBadgeGPS(accuracy, false);
  
     let velocidadKmh = 0;
@@ -529,6 +582,9 @@ function procesarTelemetriaGPS(position) {
  
         if (deltaTiempoSeg > 0) {
             const velCalc = (distM / deltaTiempoSeg) * 3.6;
+ 
+            // fix: filtro de spike más conservador (120 km/h) Y solo acumular distancia
+            // si la precisión GPS es razonable (< 40 m) o no disponible
             const precisionAceptable = !accuracy || accuracy < 40;
  
             if (velCalc < UMBRAL_VELOCIDAD_MAXIMA && precisionAceptable) {
@@ -543,14 +599,18 @@ function procesarTelemetriaGPS(position) {
                             maximaVelocidadKmh.toFixed(1) + " km/h");
                 }
             }
+            // fix: si la precisión es muy mala, usamos velocidad 0 (no acumulamos distancia)
+            // pero sí actualizamos la posición para no generar saltos en la próxima lectura
         }
     }
  
     document.getElementById('txt-velocidad').innerText = velocidadKmh.toFixed(1) + " km/h";
  
+    // ── LÓGICA DE PARADA CON HISTÉRESIS (fix principal) ──
     if (velocidadKmh < UMBRAL_VELOCIDAD_PARADA) {
         ticksBajoUmbral++;
  
+        // Solo se declara parada luego de TICKS_MIN_PARADA ticks consecutivos
         if (!estaDetenido && ticksBajoUmbral >= TICKS_MIN_PARADA) {
             estaDetenido = true;
             inicioParadaTime = Date.now();
@@ -561,6 +621,7 @@ function procesarTelemetriaGPS(position) {
             }).addTo(map);
         }
     } else {
+        // Velocidad supera el umbral → reset contador y fin de parada si estaba detenido
         ticksBajoUmbral = 0;
  
         if (estaDetenido) {
@@ -574,14 +635,16 @@ function procesarTelemetriaGPS(position) {
                 tiempoTotalDemoraSeg += duracionParadaSeg;
                 const horaArg = horaArgentina();
                 registroEventosEspeciales.push({
-                    hora: horaArg.split(" ")[1] || horaArg,
+                    hora: horaArg,
                     evento: "🛑 Parada / Demora",
                     detalle: `Vehículo detenido durante ${duracionParadaSeg} segundos.`,
                     refIndex: historialDatos.length - 1,
                     tipo: "parada"
                 });
                 if (marcadorParadaActual) {
-                    marcadorParadaActual.bindPopup(`Demora: ${duracionParadaSeg}s`).openPopup();
+                    marcadorParadaActual.bindPopup(
+                        `Demora: ${duracionParadaSeg}s`
+                    ).openPopup();
                 }
             } else {
                 if (marcadorParadaActual) map.removeLayer(marcadorParadaActual);
@@ -591,7 +654,8 @@ function procesarTelemetriaGPS(position) {
         }
     }
  
-    registrarLogGeneral(lat, lng, velocidadKmh, estaDetenido ? "FRENADO" : "MARCHA", "");
+    registrarLogGeneral(lat, lng, velocidadKmh,
+        estaDetenido ? "FRENADO" : "MARCHA", "");
  
     const coord = [lat, lng];
     rutaInstancia.addLatLng(coord);
@@ -599,14 +663,19 @@ function procesarTelemetriaGPS(position) {
     ultimoPunto = { lat, lng, timestamp };
 }
  
+// ────────────────────────────────────────────────────
+//  BADGE DE PRECISIÓN GPS (fix: visual en campo)
+// ────────────────────────────────────────────────────
 function actualizarBadgeGPS(accuracy, error) {
     const badge = document.getElementById('badge-gps-precision');
     const metrica = document.getElementById('metrica-gps');
     const txt = document.getElementById('txt-gps-precision');
  
     if (error) {
-        badge.textContent = "📡 Sin señal GPS"; badge.className = "visible error";
-        txt.innerText = "Sin señal"; metrica.className = "metrica gps-error";
+        badge.textContent = "📡 Sin señal GPS";
+        badge.className = "visible error";
+        txt.innerText = "Sin señal";
+        metrica.className = "metrica gps-error";
         return;
     }
     if (!accuracy) return;
@@ -615,23 +684,29 @@ function actualizarBadgeGPS(accuracy, error) {
     txt.innerText = `±${acc}m`;
  
     if (acc <= UMBRAL_PRECISION_GPS) {
-        badge.textContent = `📡 GPS ±${acc}m`; badge.className = "visible gps-ok"; metrica.className = "metrica gps-ok";
+        badge.textContent = `📡 GPS ±${acc}m`;
+        badge.className = "visible gps-ok";
+        metrica.className = "metrica gps-ok";
     } else if (acc <= 50) {
-        badge.textContent = `⚠️ GPS ±${acc}m — Precisión media`; badge.className = "visible warn"; metrica.className = "metrica gps-warn";
+        badge.textContent = `⚠️ GPS ±${acc}m — Precisión media`;
+        badge.className = "visible warn";
+        metrica.className = "metrica gps-warn";
     } else {
-        badge.textContent = `🔴 GPS ±${acc}m — Baja precisión`; badge.className = "visible error"; metrica.className = "metrica gps-error";
+        badge.textContent = `🔴 GPS ±${acc}m — Baja precisión`;
+        badge.className = "visible error";
+        metrica.className = "metrica gps-error";
     }
 }
  
 // ────────────────────────────────────────────────────
-//  SEMÁFORO EN ROJO
+//  SEMÁFORO EN ROJO — cronómetro dedicado
 // ────────────────────────────────────────────────────
 function iniciarSemaforo() {
-    if (semaforoId) return; 
+    if (semaforoId) return; // ya hay uno corriendo
     semaforoSegundos = 0;
     inicioSemaforoTime = Date.now();
     document.getElementById('semaforo-display').textContent = "00:00";
-    document.getElementById('in-semaforo-nota').value = "";
+    document.getElementById('semaforo-nota').value = "";
     document.getElementById('modal-semaforo').style.display = 'flex';
  
     semaforoId = setInterval(() => {
@@ -650,14 +725,12 @@ function finalizarSemaforo() {
     const duracion = semaforoSegundos;
     document.getElementById('modal-semaforo').style.display = 'none';
  
+    const notaSemaforo = document.getElementById('semaforo-nota').value.trim();
     const lat = ultimoPunto ? ultimoPunto.lat : 0;
     const lng = ultimoPunto ? ultimoPunto.lng : 0;
-    const notaSemaforo = document.getElementById('in-semaforo-nota').value.trim();
-    
-    let detalle = `Semáforo en rojo: ${duracion}s`;
-    if (notaSemaforo) {
-        detalle += ` | Nota: ${notaSemaforo}`;
-    }
+    const detalle = notaSemaforo
+        ? `Semáforo en rojo: ${duracion}s — ${notaSemaforo}`
+        : `Semáforo en rojo: ${duracion}s`;
  
     registrarLogGeneral(lat, lng, 0, "SEMAFORO", detalle);
     contadorParadasSemaforo++;
@@ -665,7 +738,7 @@ function finalizarSemaforo() {
  
     const horaArg = horaArgentina();
     registroEventosEspeciales.push({
-        hora: horaArg.split(" ")[1] || horaArg,
+        hora: horaArg,
         evento: "🚦 Semáforo en Rojo",
         detalle: detalle,
         refIndex: historialDatos.length - 1,
@@ -674,7 +747,9 @@ function finalizarSemaforo() {
  
     if (ultimoPunto) {
         L.marker([lat, lng], { icon: obtenerIconoVisual('SEMAFORO') })
-            .addTo(map).bindPopup(`<b>🚦 Semáforo:</b> ${duracion}s`).openPopup();
+            .addTo(map)
+            .bindPopup(`<b>🚦 Semáforo:</b> ${duracion}s`)
+            .openPopup();
     }
 }
  
@@ -684,26 +759,22 @@ function finalizarSemaforo() {
 function obtenerIconoVisual(tipoString) {
     let emoji = '📌'; let colorHex = '#3498db'; let size = 20;
  
-    if      (tipoString.includes('Doble Fila'))       { emoji = '🚗'; colorHex = '#e67e22'; }
-    else if (tipoString.includes('Camiones'))         { emoji = '🚛'; colorHex = '#8e44ad'; }
+    if      (tipoString.includes('Doble Fila'))             { emoji = '🚗'; colorHex = '#e67e22'; }
+    else if (tipoString.includes('Camiones'))               { emoji = '🚛'; colorHex = '#8e44ad'; }
     else if (tipoString.includes('Bus') || tipoString.includes('Colectivo')) { emoji = '🚌'; colorHex = '#f39c12'; }
-    else if (tipoString.includes('Obras'))            { emoji = '🚧'; colorHex = '#d35400'; }
-    else if (tipoString.includes('Ind.'))             { emoji = '🏭'; colorHex = '#7f8c8d'; }
-    
-    // Pines de Congestión
-    else if (tipoString.includes('Inicio Congestión Media')) { emoji = '🟡'; colorHex = '#f1c40f'; size = 26; }
-    else if (tipoString.includes('Fin Congestión Media'))    { emoji = '🟢'; colorHex = '#2ecc71'; size = 26; }
-    else if (tipoString.includes('Inicio Congestión Crítica')){ emoji = '🛑'; colorHex = '#c0392b'; size = 28; }
-    else if (tipoString.includes('Fin Congestión Crítica'))  { emoji = '🏁'; colorHex = '#2ecc71'; size = 28; }
-    // Por si mantienen las viejas temporalmente
-    else if (tipoString.includes('Congestión Media')) { emoji = '🟡'; colorHex = '#f1c40f'; size = 16; }
-    else if (tipoString.includes('Congestión Crítica')) { emoji = '🛑'; colorHex = '#c0392b'; size = 22; }
-    
-    else if (tipoString.includes('Rápido a Lento'))   { emoji = '↘️'; colorHex = '#16a085'; size = 16; }
-    else if (tipoString.includes('Lento a Rápido'))   { emoji = '↗️'; colorHex = '#16a085'; size = 16; }
-    else if (tipoString.includes('Peatones'))         { emoji = '🚶'; colorHex = '#2980b9'; }
-    else if (tipoString === 'MAX_SPEED')               { emoji = '⚡'; colorHex = '#f1c40f'; size = 24; }
-    else if (tipoString === 'SEMAFORO')                { emoji = '🚦'; colorHex = '#8e44ad'; size = 22; }
+    else if (tipoString.includes('Obras'))                  { emoji = '🚧'; colorHex = '#d35400'; }
+    else if (tipoString.includes('Ind.'))                   { emoji = '🏭'; colorHex = '#7f8c8d'; }
+    else if (tipoString.includes('Inicio Congestión Media')){ emoji = '🟡'; colorHex = '#f39c12'; size = 22; }
+    else if (tipoString.includes('Fin Congestión Media'))   { emoji = '🏁'; colorHex = '#f39c12'; size = 22; }
+    else if (tipoString.includes('Inicio Congestión Crítica')){ emoji = '🔴'; colorHex = '#c0392b'; size = 24; }
+    else if (tipoString.includes('Fin Congestión Crítica')) { emoji = '🏁'; colorHex = '#c0392b'; size = 24; }
+    else if (tipoString.includes('Congestión Media'))       { emoji = '🟡'; colorHex = '#f1c40f'; size = 16; }
+    else if (tipoString.includes('Congestión Crítica'))     { emoji = '🛑'; colorHex = '#c0392b'; size = 22; }
+    else if (tipoString.includes('Rápido a Lento'))         { emoji = '↘️'; colorHex = '#16a085'; size = 16; }
+    else if (tipoString.includes('Lento a Rápido'))         { emoji = '↗️'; colorHex = '#16a085'; size = 16; }
+    else if (tipoString.includes('Peatones'))               { emoji = '🚶'; colorHex = '#2980b9'; }
+    else if (tipoString === 'MAX_SPEED')                    { emoji = '⚡'; colorHex = '#f1c40f'; size = 24; }
+    else if (tipoString === 'SEMAFORO')                     { emoji = '🚦'; colorHex = '#8e44ad'; size = 22; }
  
     return L.divIcon({
         className: 'custom-div-icon',
@@ -727,19 +798,18 @@ function inyectarObservacion(tipoObs) {
     const lng = ultimoPunto ? ultimoPunto.lng : 0;
     registrarLogGeneral(lat, lng, 0, "OBSERVACION", tipoObs);
     contadorObservaciones++;
-    
-    const horaArg = horaArgentina();
     registroEventosEspeciales.push({
-        hora: horaArg.split(" ")[1] || horaArg,
+        hora: horaArgentina(),
         evento: "⚠️ Observación",
         detalle: tipoObs,
         refIndex: historialDatos.length - 1,
         tipo: "observacion"
     });
-    
     if (ultimoPunto) {
         L.marker([lat, lng], { icon: obtenerIconoVisual(tipoObs) })
-            .addTo(map).bindPopup(`<b>Observado:</b> ${tipoObs}`).openPopup();
+            .addTo(map)
+            .bindPopup(`<b>Observado:</b> ${tipoObs}`)
+            .openPopup();
     }
     cerrarModalObs();
 }
@@ -765,7 +835,8 @@ function renderizarListaEdicion() {
     contenedor.innerHTML = "";
  
     if (registroEventosEspeciales.length === 0) {
-        contenedor.innerHTML = "<p style='text-align:center;'>No se registraron paradas ni observaciones en este viaje.</p>";
+        contenedor.innerHTML =
+            "<p style='text-align:center;'>No se registraron paradas ni observaciones en este viaje.</p>";
         return;
     }
  
@@ -794,6 +865,7 @@ function borrarNota(index) {
 }
  
 function irAResumen() {
+    // Guardar ediciones de texto
     registroEventosEspeciales.forEach((ev, i) => {
         const el = document.getElementById(`edit-nota-${i}`);
         if (el) {
@@ -805,12 +877,16 @@ function irAResumen() {
     });
     historialDatos = historialDatos.filter(h => h.Estado !== "ELIMINADO");
  
+    // ── Marcador velocidad máxima en mapa ──
     if (coordsVelocidadMaxima && maximaVelocidadKmh > 10) {
         L.marker([coordsVelocidadMaxima.lat, coordsVelocidadMaxima.lng], {
             icon: obtenerIconoVisual('MAX_SPEED'), zIndexOffset: 1000
-        }).addTo(map).bindPopup(`<b>⚡ Vel. Máxima:</b> ${maximaVelocidadKmh.toFixed(1)} km/h`);
+        }).addTo(map).bindPopup(
+            `<b>⚡ Vel. Máxima:</b> ${maximaVelocidadKmh.toFixed(1)} km/h`
+        );
     }
  
+    // Mover mapa al bloque resumen
     const objetoMapa = document.getElementById('map');
     document.getElementById('mapa-reporte-contenedor').appendChild(objetoMapa);
     setTimeout(() => {
@@ -818,22 +894,39 @@ function irAResumen() {
         if (ultimoPunto) map.setView([ultimoPunto.lat, ultimoPunto.lng], 15);
     }, 150);
  
+    // ── Cálculo de indicadores ──
     const velGlobalKmh   = segTotales   > 0 ? (distanciaTotalMetros / segTotales)   * 3.6 : 0;
     const velMarchaKmh   = segMovimiento > 0 ? (distanciaTotalMetros / segMovimiento) * 3.6 : 0;
     const eficienciaPct  = segTotales   > 0 ? (segMovimiento / segTotales) * 100 : 0;
     const porcDemora     = segTotales   > 0 ? (segFrenadoTotal / segTotales) * 100 : 0;
+ 
+    // Índice de Marcha = Velocidad Viaje / Velocidad Marcha
+    // < 1 siempre; cuanto más cerca de 1, mejor la fluidez operativa
     const indiceMarcha   = velMarchaKmh > 0 ? velGlobalKmh / velMarchaKmh : 0;
  
-    const demoraProm     = contadorParadas > 0 ? Math.round(tiempoTotalDemoraSeg / contadorParadas) : 0;
-    const distEntrePar   = contadorParadas > 0 ? Math.round(distanciaTotalMetros / contadorParadas) : null;
+    // Demora promedio por parada
+    const demoraProm     = contadorParadas > 0
+        ? Math.round(tiempoTotalDemoraSeg / contadorParadas)
+        : 0;
  
+    // Distancia promedio entre paradas
+    const distEntrePar   = contadorParadas > 0
+        ? Math.round(distanciaTotalMetros / contadorParadas)
+        : null;
+ 
+    // Error relativo GPS (si se ingresó distancia de referencia)
     let errorRelPct = null;
     if (distanciaReferenciaMts && distanciaReferenciaMts > 0) {
-        errorRelPct = Math.abs((distanciaTotalMetros - distanciaReferenciaMts) / distanciaReferenciaMts) * 100;
+        errorRelPct = Math.abs(
+            (distanciaTotalMetros - distanciaReferenciaMts) / distanciaReferenciaMts
+        ) * 100;
     }
  
-    const distFinalText = distanciaTotalMetros > 1000 ? (distanciaTotalMetros / 1000).toFixed(3) + " km" : Math.floor(distanciaTotalMetros) + " m";
+    const distFinalText = distanciaTotalMetros > 1000
+        ? (distanciaTotalMetros / 1000).toFixed(3) + " km"
+        : Math.floor(distanciaTotalMetros) + " m";
  
+    // ── Poblar tabla de resumen ──
     document.getElementById('rep-corredor').innerText  = document.getElementById('in-lugar').value;
     document.getElementById('rep-desde').innerText     = document.getElementById('in-desde').value   || 'Punto Inicial';
     document.getElementById('rep-hasta').innerText     = document.getElementById('in-hasta').value   || 'Punto Final';
@@ -848,8 +941,13 @@ function irAResumen() {
     if (distanciaReferenciaMts) {
         document.getElementById('fila-dist-ref').style.display   = '';
         document.getElementById('fila-error-gps').style.display  = '';
-        document.getElementById('rep-distancia-ref').innerText   = distanciaReferenciaMts >= 1000 ? (distanciaReferenciaMts / 1000).toFixed(3) + " km" : distanciaReferenciaMts + " m";
-        document.getElementById('rep-error-gps').innerText       = errorRelPct.toFixed(1) + "% " + (errorRelPct <= 5 ? "✅ Aceptable" : errorRelPct <= 10 ? "⚠️ Moderado" : "❌ Elevado");
+        document.getElementById('rep-distancia-ref').innerText   =
+            distanciaReferenciaMts >= 1000
+                ? (distanciaReferenciaMts / 1000).toFixed(3) + " km"
+                : distanciaReferenciaMts + " m";
+        document.getElementById('rep-error-gps').innerText       =
+            errorRelPct.toFixed(1) + "% " +
+            (errorRelPct <= 5 ? "✅ Aceptable" : errorRelPct <= 10 ? "⚠️ Moderado" : "❌ Elevado");
     }
  
     document.getElementById('rep-t-total').innerText    = formatearMinutosSegundos(segTotales);
@@ -860,26 +958,39 @@ function irAResumen() {
     document.getElementById('rep-paradas').innerText          = contadorParadas;
     document.getElementById('rep-paradas-semaforo').innerText = contadorParadasSemaforo;
     document.getElementById('rep-observaciones').innerText    = contadorObservaciones;
-    document.getElementById('rep-demora-prom').innerText      = demoraProm > 0 ? `${demoraProm}s por parada` : "Sin paradas";
-    document.getElementById('rep-dist-entre-paradas').innerText = distEntrePar !== null ? `≈ ${distEntrePar} m` : "Sin paradas";
+    document.getElementById('rep-demora-prom').innerText      =
+        demoraProm > 0 ? `${demoraProm}s por parada` : "Sin paradas";
+    document.getElementById('rep-dist-entre-paradas').innerText =
+        distEntrePar !== null ? `≈ ${distEntrePar} m` : "Sin paradas";
  
     document.getElementById('rep-vel-promedio').innerText = velGlobalKmh.toFixed(1) + " km/h";
     document.getElementById('rep-vel-marcha').innerText   = velMarchaKmh.toFixed(1) + " km/h";
     document.getElementById('rep-vel-maxima').innerText   = maximaVelocidadKmh.toFixed(1) + " km/h";
-    document.getElementById('rep-indice-marcha').innerText = indiceMarcha.toFixed(3) + (indiceMarcha >= 0.85 ? " — Buena fluidez" : indiceMarcha >= 0.65 ? " — Fluidez media" : " — Fluidez baja");
+    document.getElementById('rep-indice-marcha').innerText = indiceMarcha.toFixed(3) +
+        (indiceMarcha >= 0.85 ? " — Buena fluidez"
+            : indiceMarcha >= 0.65 ? " — Fluidez media"
+            : " — Fluidez baja");
     document.getElementById('rep-eficiencia').innerText   = eficienciaPct.toFixed(1) + "% tiempo en marcha";
  
+    // ── Tabla de eventos ──
     const tbody = document.querySelector('#tabla-eventos-detalle tbody');
     tbody.innerHTML = "";
     if (registroEventosEspeciales.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#95a5a6;">Sin eventos registrados.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#95a5a6;">
+            Sin eventos registrados.</td></tr>`;
     } else {
         registroEventosEspeciales.forEach(ev => {
-            tbody.innerHTML += `<tr><td>${ev.hora}</td><td>${ev.evento}</td><td>${ev.detalle}</td></tr>`;
+            tbody.innerHTML += `<tr>
+                <td>${ev.hora}</td>
+                <td>${ev.evento}</td>
+                <td>${ev.detalle}</td>
+            </tr>`;
         });
     }
  
+    // ── Perfil de velocidad ──
     dibujarPerfilVelocidad();
+ 
     cambiarPantalla('pantalla-resumen');
 }
  
@@ -888,18 +999,29 @@ function irAResumen() {
 // ────────────────────────────────────────────────────
 function dibujarPerfilVelocidad() {
     const canvas = document.getElementById('canvas-perfil-velocidad');
-    if (!muestrasPerfil.length) { canvas.style.display = 'none'; return; }
+    const contenedor = document.getElementById('contenedor-grafico');
  
-    const anchoMin = 300; const anchoPorPunto = 4;
+    if (!muestrasPerfil.length) {
+        canvas.style.display = 'none';
+        return;
+    }
+ 
+    // Ancho adaptativo
+    const anchoMin = 300;
+    const anchoPorPunto = 4;
     const anchoCalc = Math.max(anchoMin, muestrasPerfil.length * anchoPorPunto);
-    canvas.width  = anchoCalc; canvas.height = 180;
-    canvas.style.width  = anchoCalc + "px"; canvas.style.height = "180px";
+    canvas.width  = anchoCalc;
+    canvas.height = 180;
+    canvas.style.width  = anchoCalc + "px";
+    canvas.style.height = "180px";
  
     const ctx = canvas.getContext('2d');
     const W = canvas.width, H = canvas.height;
     const PAD_L = 45, PAD_R = 12, PAD_T = 16, PAD_B = 36;
-    const plotW = W - PAD_L - PAD_R, plotH = H - PAD_T - PAD_B;
+    const plotW = W - PAD_L - PAD_R;
+    const plotH = H - PAD_T - PAD_B;
  
+    // Escala
     const velMax = Math.max(...muestrasPerfil.map(p => p.v), 10);
     const velEscala = velMax * 1.1;
     const tMax = muestrasPerfil[muestrasPerfil.length - 1].t;
@@ -907,8 +1029,12 @@ function dibujarPerfilVelocidad() {
     const xPt = t  => PAD_L + (t  / tMax)     * plotW;
     const yPt = v  => PAD_T + (1 - v / velEscala) * plotH;
  
-    ctx.clearRect(0, 0, W, H); ctx.fillStyle = '#f8f9fa'; ctx.fillRect(0, 0, W, H);
+    // Fondo
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#f8f9fa';
+    ctx.fillRect(0, 0, W, H);
  
+    // Grilla horizontal
     ctx.strokeStyle = '#dce0e4'; ctx.lineWidth = 0.8;
     for (let v = 0; v <= velEscala; v += 10) {
         const y = yPt(v);
@@ -917,6 +1043,7 @@ function dibujarPerfilVelocidad() {
         ctx.fillText(v + " km/h", PAD_L - 4, y + 3);
     }
  
+    // Línea UMBRAL_VELOCIDAD_PARADA
     ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
     const yUmbral = yPt(UMBRAL_VELOCIDAD_PARADA);
     ctx.beginPath(); ctx.moveTo(PAD_L, yUmbral); ctx.lineTo(W - PAD_R, yUmbral); ctx.stroke();
@@ -924,17 +1051,25 @@ function dibujarPerfilVelocidad() {
     ctx.fillText(`Umbral (${UMBRAL_VELOCIDAD_PARADA} km/h)`, PAD_L + 4, yUmbral - 3);
     ctx.setLineDash([]);
  
+    // Área rellena bajo la curva
     ctx.beginPath();
     ctx.moveTo(xPt(muestrasPerfil[0].t), yPt(0));
     muestrasPerfil.forEach(p => ctx.lineTo(xPt(p.t), yPt(p.v)));
     ctx.lineTo(xPt(muestrasPerfil[muestrasPerfil.length - 1].t), yPt(0));
     ctx.closePath();
-    ctx.fillStyle = 'rgba(52, 152, 219, 0.15)'; ctx.fill();
+    ctx.fillStyle = 'rgba(52, 152, 219, 0.15)';
+    ctx.fill();
  
-    ctx.beginPath(); ctx.strokeStyle = '#2980b9'; ctx.lineWidth = 2;
-    muestrasPerfil.forEach((p, i) => { if (i === 0) ctx.moveTo(xPt(p.t), yPt(p.v)); else ctx.lineTo(xPt(p.t), yPt(p.v)); });
+    // Línea de velocidad
+    ctx.beginPath();
+    ctx.strokeStyle = '#2980b9'; ctx.lineWidth = 2;
+    muestrasPerfil.forEach((p, i) => {
+        if (i === 0) ctx.moveTo(xPt(p.t), yPt(p.v));
+        else ctx.lineTo(xPt(p.t), yPt(p.v));
+    });
     ctx.stroke();
  
+    // Eje X — marcas de tiempo
     ctx.fillStyle = '#7f8c8d'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
     const pasoTicks = Math.max(1, Math.floor(tMax / 8));
     for (let t = 0; t <= tMax; t += pasoTicks * 5) {
@@ -944,12 +1079,15 @@ function dibujarPerfilVelocidad() {
         ctx.beginPath(); ctx.moveTo(x, PAD_T); ctx.lineTo(x, H - PAD_B); ctx.stroke();
     }
  
+    // Marcas de paradas y semáforos
     registroEventosEspeciales.forEach(ev => {
         if (!ev.tipo) return;
         const puntoRef = historialDatos[ev.refIndex];
         if (!puntoRef) return;
+        // Aproximar tiempo del evento
         const idxH = parseInt(ev.refIndex);
         if (isNaN(idxH)) return;
+        // Buscar el segTotales aproximado proporcional al índice
         const tEvento = Math.round((idxH / historialDatos.length) * tMax);
         const x = xPt(tEvento);
         if (ev.tipo === 'semaforo') {
@@ -963,12 +1101,18 @@ function dibujarPerfilVelocidad() {
         }
     });
  
+    // Leyenda compacta
     ctx.font = '10px sans-serif'; ctx.textAlign = 'left';
-    ctx.fillStyle = '#2980b9'; ctx.fillRect(PAD_L, PAD_T, 10, 10);
+    ctx.fillStyle = '#2980b9';
+    ctx.fillRect(PAD_L, PAD_T, 10, 10);
     ctx.fillStyle = '#555'; ctx.fillText("Velocidad", PAD_L + 13, PAD_T + 9);
-    ctx.fillStyle = '#8e44ad'; ctx.fillRect(PAD_L + 80, PAD_T, 10, 10);
+ 
+    ctx.fillStyle = '#8e44ad';
+    ctx.fillRect(PAD_L + 80, PAD_T, 10, 10);
     ctx.fillStyle = '#555'; ctx.fillText("Semáforo", PAD_L + 93, PAD_T + 9);
-    ctx.fillStyle = '#e74c3c'; ctx.fillRect(PAD_L + 158, PAD_T, 10, 10);
+ 
+    ctx.fillStyle = '#e74c3c';
+    ctx.fillRect(PAD_L + 158, PAD_T, 10, 10);
     ctx.fillStyle = '#555'; ctx.fillText("Parada", PAD_L + 171, PAD_T + 9);
 }
  
@@ -977,11 +1121,14 @@ function dibujarPerfilVelocidad() {
 // ────────────────────────────────────────────────────
 function subirAGoogleDrive() {
     if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("TU_URL")) {
-        alert("Configurá tu URL de Apps Script en el código."); return;
+        alert("Configurá tu URL de Apps Script en el código.");
+        return;
     }
  
     const btn = document.getElementById('btn-subir-drive');
-    btn.innerText = "🔄 Compilando y subiendo..."; btn.disabled = true; btn.style.backgroundColor = "#7f8c8d";
+    btn.innerText = "🔄 Compilando y subiendo...";
+    btn.disabled = true;
+    btn.style.backgroundColor = "#7f8c8d";
  
     const payloadData = {
         corredor:          document.getElementById('in-lugar').value,
@@ -991,7 +1138,9 @@ function subirAGoogleDrive() {
         operador:          document.getElementById('in-operador').value || '-',
         clima:             document.getElementById('in-clima').value    || '-',
         periodo:           document.getElementById('in-periodo').value  || '-',
-        distanciaRef:      distanciaReferenciaMts ? (distanciaReferenciaMts >= 1000 ? (distanciaReferenciaMts / 1000).toFixed(3) + " km" : distanciaReferenciaMts + " m") : '-',
+        distanciaRef:      distanciaReferenciaMts ? (distanciaReferenciaMts >= 1000
+            ? (distanciaReferenciaMts / 1000).toFixed(3) + " km"
+            : distanciaReferenciaMts + " m") : '-',
         fechaHora:         fechaHoraEstudio,
         distancia:         document.getElementById('rep-distancia').innerText,
         tiempoTotal:       document.getElementById('rep-t-total').innerText,
@@ -1010,18 +1159,18 @@ function subirAGoogleDrive() {
         eficiencia:        document.getElementById('rep-eficiencia').innerText
     };
  
-    if (distanciaReferenciaMts) payloadData.errorGps = document.getElementById('rep-error-gps').innerText;
+    // Error GPS opcional
+    if (distanciaReferenciaMts) {
+        payloadData.errorGps = document.getElementById('rep-error-gps').innerText;
+    }
  
     let filasEv = registroEventosEspeciales.length === 0
         ? "<tr><td colspan='3' style='text-align:center;'>Sin eventos.</td></tr>"
-        : registroEventosEspeciales.map(e => `<tr><td>${e.hora}</td><td>${e.evento}</td><td>${e.detalle}</td></tr>`).join("");
+        : registroEventosEspeciales
+            .map(e => `<tr><td>${e.hora}</td><td>${e.evento}</td><td>${e.detalle}</td></tr>`)
+            .join("");
  
     const jsGeneradorIconos = obtenerIconoVisual.toString();
-
-    // Exportar el canvas del perfil de velocidad a imagen Base64 para incrustar en el HTML
-    const canvasObj = document.getElementById('canvas-perfil-velocidad');
-    const graficoBase64 = (canvasObj && muestrasPerfil.length > 0) ? canvasObj.toDataURL('image/png') : '';
-    const imgGraficoHtml = graficoBase64 ? `<h3>Perfil de Velocidad en el Tiempo</h3><img src="${graficoBase64}" alt="Perfil de Velocidad" style="width:100%; max-width:900px; height:auto; border-radius:10px; border:1px solid #cbd5e1; margin-bottom: 20px; display: block;">` : '';
  
     const documentoHtmlCompleto = `<!DOCTYPE html>
 <html lang="es"><head>
@@ -1076,10 +1225,28 @@ ${distanciaReferenciaMts ? `<tr><td>Distancia Referencia</td><td>${payloadData.d
 <tr><td>Eficiencia Operativa</td><td><b>${payloadData.eficiencia}</b></td></tr>
 </table>
  
-${imgGraficoHtml}
-
+<div style="background:#f0f7ff;padding:16px;margin-top:20px;border-left:4px solid var(--info);border-radius:6px;font-size:0.9em;line-height:1.7;color:#2c3e50;">
+  <strong>📐 Índice de Marcha (Running Time Index - RTI)</strong><br>
+  Se calcula como: <code>Velocidad de Viaje ÷ Velocidad de Marcha</code><br>
+  <ul style="margin:8px 0;padding-left:20px;">
+    <li><strong>RTI ≥ 0.85</strong> → Buena fluidez operativa (la mayoría de la velocidad potencial se alcanza)</li>
+    <li><strong>0.65 a 0.85</strong> → Fluidez media (demoras moderadas afectan la velocidad)</li>
+    <li><strong>&lt; 0.65</strong> → Fluidez baja (muchas paradas/congestión reduce significativamente la velocidad)</li>
+  </ul>
+  <strong>Interpretación:</strong> Cuanto más próximo a 1.0, mejor es la eficiencia operativa del corredor. Un valor bajo indica que el tiempo se pierde principalmente en demoras y paradas.
+</div>
+ 
 <h3>Mapa Interactivo GPS</h3>
 <div id="map-vivo"></div>
+ 
+<h3>Perfil de Velocidad en el Tiempo</h3>
+<div style="overflow-x:auto;margin-top:10px;">
+  <canvas id="canvas-export" style="display:block;background:#f8f9fa;border-radius:8px;"></canvas>
+</div>
+<div style="background:#ecf0f1;padding:14px;margin-top:12px;border-radius:8px;font-size:0.9em;line-height:1.6;color:#2c3e50;">
+  <strong>📊 ¿Qué muestra este gráfico?</strong><br>
+  Representa la velocidad del vehículo (en km/h) a lo largo del tiempo de recorrido. La línea azul es la velocidad instantánea. La línea roja punteada horizontal indica el umbral de parada (8 km/h). Las marcas verticales identifican eventos: 🚦 semáforos en rojo, 🛑 paradas/demoras. Las "caídas" de la línea azul hacia el umbral son congestiones; las mesetas en la línea roja son detenciones del vehículo. Un gráfico suave y alto indica fluidez; uno muy dentado con muchos picos bajos indica congestión recurrente.
+</div>
  
 <h3>Eventos Capturados</h3>
 <table>
@@ -1108,6 +1275,72 @@ if(coords.length>0){
   const pMax=${JSON.stringify(coordsVelocidadMaxima)};
   if(pMax) L.marker([pMax.lat,pMax.lng],{icon:obtenerIconoVisual('MAX_SPEED')}).addTo(mapa).bindPopup("<b>Vel. Máxima</b>");
 }
+ 
+// ── Gráfico perfil de velocidad ──
+(function(){
+  const muestras = ${JSON.stringify(muestrasPerfil)};
+  const eventos  = ${JSON.stringify(registroEventosEspeciales.map(ev => ({ tipo: ev.tipo, refIndex: ev.refIndex })))};
+  const totalLog = ${JSON.stringify(historialDatos.length)};
+  if(!muestras.length) return;
+  const canvas = document.getElementById('canvas-export');
+  const anchoMin = 400, anchoPorPunto = 4;
+  const anchoCalc = Math.max(anchoMin, muestras.length * anchoPorPunto);
+  canvas.width = anchoCalc; canvas.height = 200;
+  canvas.style.width = anchoCalc+"px"; canvas.style.height = "200px";
+  const ctx = canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height;
+  const PL=50,PR=14,PT=20,PB=40;
+  const plotW=W-PL-PR, plotH=H-PT-PB;
+  const velMax=Math.max(...muestras.map(p=>p.v),10);
+  const velEsc=velMax*1.1;
+  const tMax=muestras[muestras.length-1].t;
+  const xPt=t=>PL+(t/tMax)*plotW;
+  const yPt=v=>PT+(1-v/velEsc)*plotH;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#f8f9fa'; ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle='#dce0e4'; ctx.lineWidth=0.8;
+  for(let v=0;v<=velEsc;v+=10){
+    const y=yPt(v);
+    ctx.beginPath();ctx.moveTo(PL,y);ctx.lineTo(W-PR,y);ctx.stroke();
+    ctx.fillStyle='#7f8c8d';ctx.font='10px sans-serif';ctx.textAlign='right';
+    ctx.fillText(v+" km/h",PL-4,y+3);
+  }
+  const UMBRAL=8;
+  ctx.strokeStyle='#e74c3c';ctx.lineWidth=1;ctx.setLineDash([4,4]);
+  const yU=yPt(UMBRAL);
+  ctx.beginPath();ctx.moveTo(PL,yU);ctx.lineTo(W-PR,yU);ctx.stroke();
+  ctx.fillStyle='#e74c3c';ctx.font='9px sans-serif';ctx.textAlign='left';
+  ctx.fillText('Umbral ('+UMBRAL+' km/h)',PL+4,yU-3);
+  ctx.setLineDash([]);
+  ctx.beginPath();ctx.moveTo(xPt(muestras[0].t),yPt(0));
+  muestras.forEach(p=>ctx.lineTo(xPt(p.t),yPt(p.v)));
+  ctx.lineTo(xPt(muestras[muestras.length-1].t),yPt(0));
+  ctx.closePath();ctx.fillStyle='rgba(52,152,219,0.15)';ctx.fill();
+  ctx.beginPath();ctx.strokeStyle='#2980b9';ctx.lineWidth=2;
+  muestras.forEach((p,i)=>{if(i===0)ctx.moveTo(xPt(p.t),yPt(p.v));else ctx.lineTo(xPt(p.t),yPt(p.v));});
+  ctx.stroke();
+  eventos.forEach(ev=>{
+    if(!ev.tipo||isNaN(parseInt(ev.refIndex)))return;
+    const tEv=Math.round((parseInt(ev.refIndex)/totalLog)*tMax);
+    const x=xPt(tEv);
+    if(ev.tipo==='semaforo'){ctx.strokeStyle='#8e44ad';ctx.lineWidth=1.5;ctx.setLineDash([3,3]);}
+    else if(ev.tipo==='parada'){ctx.strokeStyle='#e74c3c';ctx.lineWidth=1;ctx.setLineDash([2,4]);}
+    else{return;}
+    ctx.beginPath();ctx.moveTo(x,PT);ctx.lineTo(x,H-PB);ctx.stroke();ctx.setLineDash([]);
+  });
+  const pasoTicks=Math.max(1,Math.floor(tMax/8));
+  ctx.fillStyle='#7f8c8d';ctx.font='10px sans-serif';ctx.textAlign='center';
+  for(let t=0;t<=tMax;t+=pasoTicks*5){
+    const x=xPt(t);
+    const mm=String(Math.floor(t/60)).padStart(2,'0');
+    const ss=String(t%60).padStart(2,'0');
+    ctx.fillText(mm+":"+ss,x,H-PB+16);
+  }
+  ctx.font='10px sans-serif';ctx.textAlign='left';
+  ctx.fillStyle='#2980b9';ctx.fillRect(PL,PT,10,10);ctx.fillStyle='#555';ctx.fillText("Velocidad",PL+13,PT+9);
+  ctx.fillStyle='#8e44ad';ctx.fillRect(PL+80,PT,10,10);ctx.fillStyle='#555';ctx.fillText("Semáforo",PL+93,PT+9);
+  ctx.fillStyle='#e74c3c';ctx.fillRect(PL+158,PT,10,10);ctx.fillStyle='#555';ctx.fillText("Parada",PL+171,PT+9);
+})();
 <\/script>
 </body></html>`;
  
@@ -1278,3 +1511,4 @@ function reiniciarApp() {
 </script>
 </body>
 </html>
+ 
